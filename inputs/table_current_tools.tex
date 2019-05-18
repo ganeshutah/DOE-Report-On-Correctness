@@ -1,0 +1,77 @@
+% by ilaguna
+\newcommand{\CM}{\checkmark}
+\definecolor{LightCyan}{rgb}{0.88,1,1}
+\definecolor{Gray}{gray}{0.9}
+
+\begin{table}[th!]
+
+\renewcommand{\arraystretch}{1.1}
+\centering
+\caption{Some of the existing tools and frameworks to detect and localize bugs in HPC programs}
+\label{table:tools}
+\scalebox{0.80}{
+\begin{adjustbox}{width=1.3\textwidth,center}
+\begin{tabular}{p{13cm}|lllllll}
+ & 
+\rot[65]{Formal Method} & %1
+\rot[65]{Static Analysis} & %2
+\rot[65]{Dynamic Analysis} & %3
+%\rot[65]{Code-Generation Verif.} & %4 
+\rot[65]{Control of Non-determ.} & %5
+\rot[65]{Anomaly detection} & %6
+\rot[65][3em]{Parallel debugging} %7
+\\ \hline
+
+\rowcolor{Gray}
+\multicolumn{7}{c}{\textbf{Serial Code}} \\ \hline
+\textbf{Clang Static Analyzer}--{static analysis bug detection in C/C++~\cite{ClangStatic}} & \CM & \CM &  &  &  &  \\ \hline
+\textbf{Clang Sanitizers}--{runtime bug detection (e.g., AddressSanitizer)~\cite{CLANGSANITAZERS}} &  & \CM &  &  &  &  \\ \hline
+\textbf{Klocwork}--{on-the-fly, scalable static analysis~\cite{KLOCWORK}} & & \CM &  &  &  &  \\ \hline
+
+\rowcolor{Gray}
+\multicolumn{7}{c}{\textbf{Multi-threaded Code}} \\ \hline
+\textbf{Valgrind}--{memory management error detection and threading bugs~\cite{Valgrind}} &  &  & \CM &  &  &  \\ \hline
+\textbf{Intel Inspector}--{memory and threading error debugger~\cite{IntelInspector}} & & \CM & \CM &  &  & \CM  \\ \hline
+\textbf{CUDA-MEMCHECK}--{memory access errors detection in GPU code~\cite{CUDAMEMCHECK}} &  &  & \CM &  &  &  \\ \hline
+\textbf{ThreadSanitizer}--{data-race detection for multi-threaded programs~\cite{ThreadSanitizer}} &  &  & \CM &  &  &  \\ \hline
+\textbf{ARCHER}--{data-race detection for OpenMP programs~\cite{ARCHER}} &  & \CM & \CM &  &  &  \\ \hline
+\textbf{GMRace}--{data-race detection in GPU programs~\cite{GMRACE}} &  & \CM & \CM &  &  &  \\ \hline
+\textbf{GKLEE}--{concolic verification GPU programs~\cite{GKLEE}} & \CM & \CM & \CM &  &  &  \\ \hline
+\textbf{GPUVerify}--{static (SMT-based) verification of GPU programs~\cite{gpuverify:oopsla13}} & \CM & \CM &  &  &  &  \\ \hline
+\textbf{DTHREADS}--{deterministic execution of multi-threaded programs~\cite{DTHREADS}} &  &  & \CM & \CM &  &  \\
+\hline\textbf{CUDA-GDB}--{NVIDIA CUDA gdb-based debugger} &  &  &  &  &  & \CM \\
+\hline\textbf{Insure++}--{runtime error detection~\cite{INSURE++}} &  &  & \CM &  &  &  \\ \hline
+
+\rowcolor{Gray}
+\multicolumn{7}{c}{\textbf{Multi-process Code}} \\ \hline
+\textbf{MUST}--{MPI deadlock detection~\cite{MUST}} & \CM &  & \CM &  &  &  \\ \hline
+\textbf{UMPIRE}--{dynamic error detection for MPI~\cite{UMPIRE}} &  &  & \CM &  &  &  \\ \hline
+\textbf{ISP}--{dynamic formal verifier for MPI~\cite{ISP}} & \CM &  & \CM &  &  &  \\ \hline
+%\textbf{DAMPI}--{dynamic formal verifier for MPI~\cite{DAMPI}} & \CM &  & \CM &  &  &  \\ \hline
+\textbf{FlowChecker}--{communication errors in MPI~\cite{FLOWCHECKER}} &  &  & \CM &  & \CM &  \\ \hline
+%\textbf{MC-Checker}--{detection of memory consistency errors in MPI [XX]} &  &  & \CM &  &  &  \\ \hline
+\textbf{AutomaDeD}--{anomaly detection in parallel programs~\cite{AUTOMADED}} &  &  & \CM &  & \CM &  \\ \hline
+\textbf{Prodometer}--{progress-dependence analysis to diagnose hangs~\cite{PRODOMETER,PACTLaguna:2012}} &  &  & \CM &  & \CM &  \\ \hline
+\textbf{Vrisha, WuKong}--{scale-dependent bug detection~\cite{VRISHA,WUKONG}} &  & \CM & \CM &  & \CM &  \\ \hline
+\textbf{}{Scale-dependent overflows detection~\cite{INTOVERFLOWS}} &  & \CM & \CM &  &  &  \\ \hline
+\textbf{MPIWiz}--{record-and-replay for MPI~\cite{MPIWIZ}} &  &  & \CM & \CM &  &  \\ \hline
+\textbf{Retrospect}--{deterministic replay of MPI applications~\cite{RETROSPECT}} &  &  & \CM &  \CM &  & \\ \hline
+%\textbf{}{Integrated record-and-replay for MPI~\cite{INTEGRATED:R&R}} &  &  & \CM & \CM &  &  \\ \hline
+\textbf{ReMPI}--{record-and-replay for MPI~\cite{REMPI}} &  &  & \CM &  \CM &  &  \\ \hline
+\textbf{NINJA}--{noise injection to make ND bugs in MPI manifest faster~\cite{NINJA}} &  &  & \CM &  \CM &  &  \\ \hline
+\textbf{SReplay}--{record-and-replay for one-sided communication~\cite{ICS'16,PPoPP'16}} &  &  & \CM &  \CM &  &  \\ \hline
+
+\rowcolor{Gray}
+\multicolumn{7}{c}{\textbf{Hybrid (multi-threaded, multi-process) Code}} \\ \hline
+\textbf{CIVL}--{formal Verification of parallel programs~\cite{CIVL}} & \CM & \CM & &  &  &  \\ \hline
+\textbf{Relative Debugging}--{comparison of two program executions~\cite{DeRose:2015}} &  & \CM & \CM &  &  & \CM \\ \hline
+\textbf{STAT}--{stack trace analysis tool~\cite{STAT}} &  & \CM &  &  &  & \CM \\ \hline
+\textbf{TotalView}--{parallel debugger~\cite{TotalView}} &  &  & \CM &  &  & \CM \\
+\hline\textbf{DDT}--{parallel debugger~\cite{DDT}} &  &  & \CM &  &  & \CM \\
+\hline\textbf{LGDB, CCDB}--{Cray command-line parallel and comparative debuggers} &  &  & \CM &  &  & \CM \\
+
+\hline
+\end{tabular}
+\end{adjustbox}
+}
+\end{table}

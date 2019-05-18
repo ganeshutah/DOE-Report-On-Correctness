@@ -1,0 +1,181 @@
+
+% Steve Siegel is the leader of this section.
+% This section lays out the PROBLEM --- not the solution.
+% The old material has been moved to file correctness-attic.tex
+
+% Two sub-sections:
+
+%  1. What is "correctness"?   how is the correctness problem dealt with in general (or in other fields)?  Testing, specification, formal methods, model checking, deductive reasoning, runtime verification, ... generic properties specified by language/APIs vs. program-specific properties
+
+%  2. What is correctness in the HPC context?  What is special about it?  Why is it important and What are the trends that make it more important now than ever?  Why don't those general solutions just "port" to HPC?  The oracle problem, numerics, linear algebra, performance, optimization, ...
+
+\input{inputs/sec2-correctness-problem-gist.tex}
+
+\subsection{What is the Correctness Problem?}
+\label{sec:correctness_general}
+
+% This section deals with the issue of "correctness" in the general setting
+% (not necessarily to do with HPC).  General specification and verification
+% techniques are summarized.  Formal methods, model checking, deductive
+% reasoning and verification condition generation.
+
+A program is \emph{correct} when it behaves as expected on any execution.  This definition begs the question, what behavior is expected?  This is in general a difficult question to answer and will naturally vary from program to program.  Hence the question of correctness involves two related activities: \emph{specification}---the process of rigorously defining what a program is expected to do---and \emph{verification}---the process of establishing that a program complies with its specification, i.e., that it is correct.
+
+\subsubsection{Specification}
+
+\ignore{===>
+\ggcmt{Good section, but we must address the difficulty of writing a spec for even a simple user function containing MPI calls, for which contracts are impractical. The primary difficulty is due to users having decomposed a high level sequential program into a collection of parallel programs ``in their heads;'' and a sentence capturing this will help. Also, specifying desirable outcomes of parallel program units (say, with locks, OMP no-wait, etc.) must also be touched upon (one sentence).  In general, writing specs at smaller grain sizes may be non-productive when concurrency is involved; one may have to simply write specs at very high levels of the module hierarchy and look for correctness at such levels.}
+
+\sscmt{I believe contracts in MPI programs are practical at ``collective points,'' e.g., at functions which are collective-like, meaning, they are intended to be called by all processes in a communicator.  That is what Ziqing Luo's thesis is about.  Whether they would be practical at finer granularity is an open question; I'm not sure anyone has tried.}
+
+\ggcmt{I think contracts for MPI are a great idea, provided we give an idea of the effort involved and justify it (e.g., critical user libraries written in MPI, for which the effort can be amortized).}
+
+\phcmt{It might be easier to specify behavior in terms of a BSP model, even if the actual implementation relaxes BSP semantics.}
+
+\sscmt{Paul is saying the same thing I was trying to say, except he says it better.}
+
+\ggcmt{Gist of some discussions: Say somewhere that specs may be easier to write for BSP models, even if the actual implementation relaxes the BSP semantics.}
+
+<===}
+
+\paragraph{Generic vs.\ application-specific properties.}  Certain aspects of the specification of a program come ``for free.''  These include requirements imposed by the programming language used to develop the program.  For example, any correct C program should never attempt to read or write to a memory location beyond the bounds of an object, divide by 0, or dereference a null pointer.  These requirements are specified in the C Standard, and are inherited by any program written in C.
+
+The application program interfaces (APIs) of libraries and other language extensions used by the program may impose additional requirements.  The Message Passing Interface (MPI) standard, for example, requires that all processes belonging to a communicator issue the same sequence of collective calls on that communicator.  The OpenMP Standard forbids data races on shared variables.  As with C, violations of these restrictions lead to undefined behavior, and should never occur in a correct program.
+
+As important as these language-level requirements are, they do not suffice for specifying correct program behavior.  The C program\\
+\phantom{xxx}\texttt{int\ main()\ \lb\rb}\\
+satisfies all such requirements, but will not correctly compute the solution to a partial differential equation or the effective neutron multiplication factor of a fission reactor.  Clearly, additional techniques must be used to specify \emph{application-specific} properties.
+
+\paragraph{Assertions.}  \emph{Assertions} are a standard way of specifying application\--spe\-ci\-fic properties.   An assertion specifies a boolean expression which is expected to evaluate to \emph{true} whenever control reaches that statement.  Most programming languages support assertions in some way.  In C, for example, \texttt{assert} statements are checked at runtime and a diagnostic message is printed if one fails.  Assertions can also be turned off to save time in production runs, but this limits their ability to establish correctness of HPC applications, since many defects appear only at large scale.
+
+While useful for expressing certain correctness properties, assertions are limited to the primitives available in the programming language and cannot easily express relations across different states.  It is difficult to assert ``forall integers $i$, if $0\leq i<n$ then the value of \texttt{x(i)} when control exited this function is twice the value of \texttt{x(i)} when control entered the function.''
+
+\paragraph{Contracts.}  More sophisticated specification systems such as \emph{contract languages} overcome some of these limitations.  For example, the ANSI C Specification Language (ACSL) is used to specify the behavior of C functions.  The language provides first-order quantifiers (``for all'', ``exists'') and many other primitives beyond those available in C.   ACSL function contracts specify pre-conditions (conditions assumed to hold when control enters the function) and post-conditions (expected to hold when control exits); they also allow one to specify relations between the pre- and post-states.
+
+ACSL contracts are inserted as comments in the code, so they do not impact the usual workflow of compiling and executing the program.  Specialized tools (for performing verification or other tasks) use the contracts in different ways.  The Frama-C platform, for example, can be used to verify ACSL function contracts using deductive (theorem proving) techniques.
+%
+% GG added the BSP comment
+Contracts may also be added with respect
+to collective calls in programming models based on the Bulk
+Synchronous Parallel (BSP) Model~\cite{DBLP:conf/vmcai/SiegelZ11}.
+
+\paragraph{Certificates.}  In certification systems, proofs or correctness can be idicated as tactics scripts~\cite{bertot2013interactive} (e.g., written in Coq~\cite{coq}).  In these systems, both the proof and the imperative code that runs can be auto-generated from the tactics; this is how the certified compiler CompCert~\cite{leroy2004compcert} and the Certified Kit Operating System CertiKOS~\cite{certikos} are implemented.
+
+\paragraph{Golden models.}  Finally, sometimes the simplest way to specify an algorithm is to provide an implementation.  This implementation could be a simple, inefficient sequential expression of the algorithm.  It can then be used as a ``golden model'' against which production-quality implementations can be compared.  Methods that can establish the functional equivalence of two programs could then be used to verify the production implementation.
+
+%\kscmt{One could use a \emph{golden model} as a specification.  A golden model could be an inefficient sequential implementation of an algorithm. The implementation can be verified against the model on small inputs exhaustively via testing.}
+
+% other primitives: summation (reductions), etc.
+
+\subsubsection{Verification}
+
+It is well-known that the verification problem is undecidable: there does not exist an algorithm that can always answer correctly the question, \emph{does a program satisfy its specification?}.  But a technique does not have to be perfect to be useful, and over the years, a large number of practical verification approaches have been studied and implemented.  Roughly speaking, we may divide these into two categories.
+
+Tools in the first category attempt to \emph{prove} that a program (with specification) is correct.  If the tool succeeds, the program is guaranteed to be correct.  The tool can fail to find a proof for a number of reasons: the program is incorrect, the resources required (e.g., time or memory) exceed what the user can afford, or the tool is just not capable of finding the proof.  Hence these tools can sometimes show a program is correct, but cannot show a program is incorrect.
+
+Tools in the second category attempt to find defects in programs.  If the tool finds a defect, it has shown that the program is incorrect.  However, such tools may fail to find existing defects---because they are not capable of finding such defects, or cannot do so within reasonable resource limits---and they may report ``false alarms''---possible defects which are not actual defects.  Such tools can show a program is incorrect and provide valuable debugging information, but they cannot show a program is correct.
+
+In reality, this distinction is not black-and-white. Rather, these two categories are two extreme points on a spectrum, with most tools falling somewhere in between.  For example, model checking techniques can be used to prove that a program satisfies specified properties within certain finite bounds (e.g., on the number of processes or inputs sizes) but leave open the possibility that a defect exists outside of those bounds.  Contract-based techniques can show that one function in a program is correct under the assumption that other functions behave correctly.   Other approaches can give probabilistic guarantees.  
+
+In what follows, we outline some of the major currents in software verification research and practice.
+
+%\ggcmt{I would soften ``some of the most important'' in several ways. Even from a theoretical sense, I would argue that deductive verification (as in textbooks and as supported by Frama-C) will not take off in some of today's HPC codes such as MPI programs. For instance, one has to write contracts at every MPI call. Instead, by tracing {\bf how} a user pulled apart an original sequential programming intent (unit) into a spaghetti-connected collection of units that talk to each other via MPI and OpenMP, we might make verification more tractable. {\bf Remedy:} (1) Clearly, deductive methods can work for numerical libraries even if they are OMP-parallelized (provided we ensure race freedom); so maybe pitch this angle.
+%(2) For more ad-hoc decomposed codes such as MPI,
+%to ``put back'' the overall behavior of the ``pulled apart'' components, a suitable Dynamic-Symbolic (or Concolic) execution method can help. The Symbolic Execution paragraph may be beefed-up a bit more to address these points.}
+
+\paragraph{Testing.} The most widely-used approach to the correctness problem, testing involves executing the program on a selection of inputs and examining the results.  Testing has become a more rigorous discipline over the last 20 years.  A variety of techniques for selecting test sets satisfying certain criteria (e.g., statement, branch, or path coverage) have been explored. Language-specific properties, assertions, and even contracts can be tested.  The main limitation is that testing cannot establish the program behaves correctly on an input not in the test set.  Other limitations in the HPC context are discussed in Section \ref{sec:correctness_hpc}.
+
+\paragraph{Static analysis.}  These automated techniques attempt to reason about a program without executing it.  Compilers use static analyses to prove properties such as: a variable is never used before it is defined; a variable is only assigned a value of a compatible type; and control never reaches the end of a function body without issuing a \emph{return} statement.  The types of properties that can be proved are generally simple (see Table~\ref{table:tools}).
+
+\paragraph{Dynamic analysis.} In this approach, properties are checked as a program executes, or after the program stops using traces that are gathered when the program executes (see Table~\ref{table:tools}).  Like testing, specific inputs are needed, but dynamic analyses can detect defects that are not normally detected by testing, such as the occurrence of a ``potential deadlock'' even when no actual deadlock occurred during the execution.
+
+\paragraph{Deductive reasoning \cite{hoare:1969:axiomatic}.}  This family uses theorem-proving techniques to prove a program satisfies its specification.  They can be fully automated or require substantial human interaction.  Verification Condition Generation is one increasingly popular approach that generates a number of small theorems from a program+specification which can then be independently ``discharged'' (proved) using a variety of theorem provers.  These approaches often require at least some help from the user, such as code annotations (e.g., loop invariants) or guidance through more difficult proofs.
+
+\paragraph{Symbolic execution \cite{king:1976:symbolic, klee:osdi:2008, siegel-zirkel:2011:tass-mcs}.}  These techniques ``execute'' a program in an abstract sense, using symbols ($X_1$, $X_2$, \ldots) in place of concrete values as inputs.  The ``values'' returned by operations are symbolic expressions (e.g., $X_1-2.7*X_2$).  Symbolic execution can be used to generate high-quality test sets automatically, to find bugs, and even to prove properties (usually with some restrictions such as bounds on input sizes or loop iterations).
+
+\paragraph{Model checking \cite{clarke-grumberg-peled:1999:book}.}  This approach is particularly effective for checking temporal properties of concurrent systems, e.g., ``no process calls function \texttt{f} until every process has exited the ghost-cell exchange.''  It is standard in the hardware industry and is the basis of many software verification techniques for parallel programs.  Typical model checking techniques compute a set of reachable states of a finite transition system.  When applied to software this usually enables exhaustive verification of properties with small bounds on the number of processes and other parameters. Model checking can be combined with symbolic execution to cover a wide range of concurrency behaviors and a wide range of inputs.
+
+\paragraph{Certification.}
+In the certification approach, proofs are constructed by the programmer along with the software.  Proof assistants automate aspects of this task to multiply programmer effectiveness in generating code with associated proofs.  Certifying compilers~\cite{leroy2009formal} preserve the proof through code optimization, to produce optimized code along with the compacted proof, in a certificate, of its correctness.  The certificate can be rapidly checked against the binary, e.g., as the program starts, to ensure that the resulting binary code meets the specification. 
+
+\subsection{Challenges in High Performance Computing}
+\label{sec:correctness_hpc}
+
+% This section deals with correctness in the HPC context.
+% What is special about it?
+% Why is it important and What are the trends that make it
+% more important now than ever?
+% Why don't those general solutions summarized in the previous
+% section just "port" to HPC?
+% Many reasons, including the oracle problem, numerics,
+% linear algebra, performance, optimization, ...
+
+The correctness problem takes on a number of special characteristics in high performance computing.  Here we enumerate some of the most important points.  These points illustrate why specification and verification are particularly needed now in HPC, and identify specific challenges that will need to be overcome.
+
+\paragraph{The oracle problem.}
+HPC programs are often attempting to do new science, so the expected results are usually not known.  This makes traditional testing techniques, in which the actual result computed by the program is compared with an expected result, impossible.  (There are often specific cases in which the expected result is known, but these are exceptional.)  Hence HPC requires verification approaches that do not require knowledge of all expected results.  An example would be a tool that proves the functional equivalence of a complex, optimized implementation of some algorithm with a simple, trusted implementation of that algorithm.
+
+%\phcmt{Can we provide evidence to support the assertion that "HPC programs tend to be highly nondeterministic?"  The folklore is that HPC developers will go to extraordinary lengths to avoid nondeterminism.  I think that the argument that ensuring determinism costs energy and time might be more compelling.} 
+% Paul has dealt with above.
+
+\paragraph{Nondeterminism.}
+Many HPC programs are nondeterministic.  One source of nondeterminism is concurrency---varying the interleavings of actions from different threads or processes and the computed results may change.  The transition to exascale is expected to lead to even more nondeterminism; hardware components will dynamically adjust their execution rates; software implementations will embrace asynchrony to save time and energy; and linear algebra libraries will increasingly employ randomized algorithm techniques to achieve asymptotic speedups~\cite{spielman2004nearly}.  Testing becomes extremely problematic for nondeterministic systems,  because a correct execution for some input does not even guarantee the program will behave correctly on a second execution with the same input.
+
+There is no one-size-fits-all approach to nondeterminism.   For many programs, the final result is expected to be completely independent of the program's ``internal nondeterminism.''  For others, the final result is expected to vary in expected ways, for example, any difference should result only from the non-associativity of floating-point operations.  In addition, many HPC algorithms, such as Monte Carlo simulations, rely on randomness in an essential way.  For such ``externally nondeterministic'' programs, new specification techniques may be needed, for example, to express correctness in terms of probability distributions.
+
+%\ggcmt{Maybe call this ``external non-determinism, as many other cases fall under internal nondeterminism for which the external outcome can be deterministic.''}
+
+\paragraph{Performance-focus.}
+In traditional software domains, programmers try to express algorithms in the simplest and most natural ways possible.  This makes code easy to understand, maintain, and modify.  In HPC, there is a tension between these goals and the need for good performance.  Simple algorithms that could be expressed in a few lines of code, such as matrix-matrix multiplication, are often re-written using a combination of optimizations, such as loop tiling, loop permutation, and loop unrolling.  The programmer must also introduce explicit parallelism.  Even though such loop optimizations and loop parallelization can be easily performed by a compiler (automatically or interactively), many HPC programmers persist in performing these optimizations manually, introducing the chance for bugs.  The programs are often highly parameterized, and provide multiple implementations of many functions, since different parameters and versions are needed to obtain adequate performance on different platforms.  All of these forces lead to programs that are considerably more complex than they would be if performance were not an overriding goal.  The increased complexity makes defects much more likely and verification even more necessary.
+
+\paragraph{Concurrency.}
+% Most
+HPC programs are parallel programs.  While some of the verification techniques discussed in Section \ref{sec:correctness_general} are applicable to parallel programs, the vast majority of verification work targets sequential programs. For example, the ACSL specification language is very mature and used by a number of tools, but has no support for concurrency.  Furthermore, modern HPC programs are increasingly \emph{hybrid programs} which invoke multiple concurrency models in a layered approach.  These programs are extremely difficult to reason about informally.  Yet even among those verification tools targeting parallel programs, very few can be applied to hybrid programs.  Finally, the use of weak shared memory consistency models---expected to increase in the exascale era, in order to hide memory latencies---adds another layer of complexity and will require new verification techniques.
+
+%\ggcmt{{\em Steve, I made the suggested addition; here it is; please check:} There are also concerns that are quite daunting even for the experts---such as the use of weak shared memory consistency models---whose increasing usage in the exascale era in order to hide latencies will further exacerbate the already existing problems due to concurrency.}
+
+\paragraph{Scale.}
+Modern HPC programs are intended to run at an extreme scale, with astronomical input sizes, numbers of processes or threads, execution time, and so on.  Often, defects are not observed at small scale.  This makes traditional testing and debugging techniques difficult.  It can be very expensive and difficult to obtain time on the machines that can support that scale.  It can take a tremendous amount of time to run tests at that scale.  And debugging a trace involving millions of steps and thousands of threads is an extreme sport.  Traditional model checking techniques also scale poorly.  Therefore HPC requires (1) verification techniques that can scale to that massive scale, (2) techniques that ``downscale'' programs so that defects that normally manifest only at large scale will manifest in the downscaled version, or (3) techniques whose cost is independent of scale.
+
+\paragraph{Mathematical abstractions.}
+Many HPC programs use mathematical subjects such as multivariate calculus, differential equations, linear algebra, and (directed) graphs.  Specifying algorithms in these areas is extremely difficult if the specification language does not provide appropriate abstractions, such as \emph{derivative}, \emph{matrix}, or \emph{strongly-connected component}.  Similarly, proof systems or automated verification techniques must be developed to support those abstractions.  Many libraries of this sort exist (see e.g., ~\cite{awesome-coq}) but there is much work to increase their adoption in the HPC community and to fill out needed gaps.
+
+\paragraph{Floating-point arithmetic.}
+Many HPC programs involve extensive float\-ing-point computations.  The notion of correctness in such programs is intimately tied up with floating-point issues, such as round-off error.  Increasingly, developers are reducing floating-point precision to reduce communication costs, and the effect of these tweaks on the output is difficult to gauge.  Tools that can analyze the extent of error introduced by these tweaks and determine whether it is within safe margins for a given application are needed.  However, with few exceptions, support for floating-point reasoning is very weak in existing verification systems. Floating-point arithmetic also wreaks havoc on testing-based verification, since it can be difficult to determine the magnitude of an acceptable discrepancy. 
+
+Another aspect of floating-point arithmetic is how compilers treat float\-ing-point optimizations.
+%
+All compilers support a slew of ``IEEE-unsafe'' floating-point optimization flags that can yield a manyfold improvement in performance,  but at the expense of changing the results of floating-point calculations. 
+%
+The flags themselves vary from platform to platform.
+%
+This aspect of floating-point result variability can render applications incorrect, especially if applied with a performance-focus alone (not minding correctness or result-reproducibility).
+
+\paragraph{Programming language.}
+Most HPC programs are implemented in Fortran or C++ (or both), while many verification tools target C or Java.  While many of the ideas and even specific techniques are language-independent, significant engineering effort is required to extend existing verification tools to new programming languages.
+
+% Here are some of the most important ideas to raise:
+
+% defect understanding and isolation (not just yes/no) is a real
+% challenge for HPC programs due to the massive scale...
+% formal specification of mathematical algorithm (real arithmetic...)
+% is difficult and not sufficiently studied.
+% need formal spec. of properties of floating-point arithmetic
+%   - numeric error precision
+% reasoning about asynchronous, nondeterministic behavior
+% increasing use of low-precision data representations to reduce
+% communication
+% heterogeneity leads to multiple versions for
+%   - different architectures
+%   - different machine models
+%   - different performance models
+% hybrid (MPI+X): multiplicative effect on possible concurrency bugs,
+%  - interfaces loosely specified
+% scale: thousands to millions (billions) of cores
+% programming languages, libraries, dialects not commonly used in other
+%    disciplines (e.g., Fortran, Petsc, MPI, OpenMP)
+% Answers not necessarily known (new science)
+% combining codes in ways that are poorly understood
+% PERFORMANCE: OPTIMIZATION to the extreme! break abstractions
+% legacy code
+% low user:developer ratio [but try to raise it by making code more re-useable]

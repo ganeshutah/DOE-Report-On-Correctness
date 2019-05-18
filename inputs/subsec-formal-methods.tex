@@ -1,0 +1,310 @@
+ %\subsubsection{Definition of formal methods, and importance for HPC}
+ 
+
+
+Formal methods are rigorous mathematical techniques for exhaustively checking that the
+model of a system under analysis satisfies a set of desired properties.
+%
+The model in question could be: 
+ (1)~a piece of code (e.g., the model of a numerical routine); or
+\ignore{===
+(2)~formalism underlying a particular
+type of analysis (e.g., partial orders that describe a family of memory models, or a particular
+formal model describing floating point arithmetic);
+===}
+(2)~a set of rules or axioms describing the behavior of some aspect of the system (for example, partial orders can describe the guarantees provided by a memory model, or a set of mathematical rules can describe the behavior of floating point arithmetic).
+%
+The second perspective is an example of formal methods   that are ``baked into'' analysis procedures or developed to
+support specific lines of reasoning.
+
+\ignore{===
+or even 
+(3)~formal models underlying
+a compiler that produces a piece of stencil code based on its sketch.
+ %
+ The latter two  
+ ===}
+
+
+\ignore{==>
+%
+At the very least, the extent of expert involvement must be contained (e.g., one particular numerical routine), with the correctness of all code variants of that routine implied by formalized transformations.
+
+ The main reason to emphasize formal methods is that HPC can learn
+from the hardware industry where
+{\em almost all chips that matter} are subject to some extent of formal analysis.
+%
+Often {\em semi-formal} adaptations work best in practice where the driving theory/formalism is the same, but the checking steps are bounded in some sense (e.g., concretizing some inputs, bounding the depth of exploration, selecting critical subsystems for analysis while under-approximating their environment, etc.).
+%
+Here are two examples:
+\begin{compactitem}
+\item No microprocessor gets shipped without its cache coherence protocols being 
+subject to formal analysis and correction; this trend started with pioneering efforts
+such as Loewenstein's
+adaptation of David Dill's Murphi tool around
+1991 at Sun Microsystems.
+%
+Even today, Murphi is the language of choice for modeling and verifying industrial cache coherence protocols.
+
+<==}
+
+Following the well-known Intel Pentium fiasco, all major chip manufacturers 
+ have now adopted formal analysis to
+ verify floating-point hardware.
+ %
+ In a recent project at Intel~\cite{roope-intel-fv-i7}, formal methods were deemed so
+ successful in examining critical arithmetic units of Intel's core i7 that
+ traditional simulation-based testing was largely eliminated.\footnote{In recognition of this success, the leader of
+ this project,
+ Roope Kaivola, won Microsoft's prestigious verified software award of 2014.}
+ %
+ 
+ 
+ Achieving this degree of adoption of formal
+ methods in HPC is a coveted goal.
+ %
+ However, driving a formal methods agenda forward in HPC requires prudence, given the absence of an obvious failure cost model (as happens when chips emerge with silicon defects, where each mask re-spin costs millions of dollars), and
+also given the sheer complexity of 
+HPC software.
+%
+More practical are approaches where 
+formal methods are baked into tools so that
+everyday users are not confronted with
+modeling their idiosyncratic pieces of
+code.
+\ignore{===
+%
+Instead, experts are charged with
+formalizing their tools and underlying 
+formal models.
+ ===}
+ 
+ \ignore{==>
+ 
+  Exhaustively means 100\% of the state space of the model (simulation models only check about 1\% of the state space).
+ \ggcmtside{Simulation models covering 1\% is too arbitrary; often we don't know how much we cover.}
+ 
+A provably correct system is formally verified for a set of properties that provides complete coverage of system behavior 
+Do verified properties cover all behaviors of the system?
+For HPC codes
+Need to extend formal methods to statistical reasoning in order to apply formal verification to scientific applications
+Inputs can be large n-dimensional matrices
+What is feasible, what is not? 
+Need to run correct apps on provably correct system software (software stack), which needs to run on provably correct hardware.
+<==}
+
+\if 0
+\subsubsection{Driving forward a formal methods agenda in HPC}
+
+Driving a formal methods agenda forward in HPC requires prudence, given the absence of an obvious failure cost model (as happens when chips emerge with silicon defects, where each mask re-spin costs millions of dollars), and
+also given the sheer complexity of 
+HPC software.
+%
+The recommended steps are to employ
+formal methods baked into tools so that
+everyday users are not confronted with
+modeling their idiosyncratic pieces of
+code; rather, experts are charged with
+formalizing their tools and underlying 
+formal models.
+%
+We highlight the following list of topics
+as highly promising and 
+exemplar (no means exhaustive) directions
+to pursue in HPC applications of formal
+methods.
+
+%\begin{compactitem}
+%\item 
+Formal methods based on automata-theoretic modeling can be applied to expressing component interfaces in the form 
+of interface automata (evolved at UCB in the early 1990s by
+Henzinger et al), or learning the behavior of code that a human expert
+does not understand (the latter has been
+successfully applied in the Android 
+operating system context).
+
+%\item 
+Formal methods can help narrow the gap
+between low level traces and human understanding
+of the code. These inverse-mapping relations are 
+crucial to create in order to explain bugs in higher
+level terms.
+
+%\item 
+Results obtained from recent efforts,
+such as from the D-TEC project at MIT, help
+transform stencil code written in Fortran
+to a DSL (Halide), which is then code generated and optimized to any hardware platform, with formal verification that the transformation is correct.
+
+%\item 
+Given the shift toward automated data layout
+and iteration-space optimizations achieved through
+portability layers such as 
+RAJA~\cite{RAJA-LLNL-TR}
+and 
+Kokkos~\cite{DBLP:journals/jpdc/EdwardsTS14},
+the integrity of such ``tall compilation stacks'' 
+can become single points of failure
+due to bugs they can introduce in
+all their generated code. 
+%
+On the flip side, these stacks can also serve
+as
+{\em single opportune points of intervention}
+for maximally impactful uses of formal methods.
+
+%\item 
+Formal methods can provide the underpinnings
+for code generation, for example
+for different data layouts. The generated
+code can provide a consistent representation, as well
+as automation of the tradeoff-space exploration. Code
+generation may also be able to encompass
+the generation of complex data structures that are not feasible for humans to originate.
+
+
+%\item 
+For floating-point arithmetic and associated error versus performance tradeoff analysis, formal methods can provide safety-nets for enabling what practitioners like to do---i.e., push
+on performance while skimping on precision.
+Formal methods are essential
+to define what is safe for the
+situation at hand (error containment, ensuring convergence), as floating-point precision tuning 
+cannot be done without modeling the usage context.
+
+%\item 
+In the area of formal shared memory consistency models, formal methods are the {\em only game in town} in the sense that ad hoc testing 
+does not ensure anything.
+%
+More importantly, formal methods can eminently 
+point to formalized testing adaptations, as
+in a recent paper~\cite{DBLP:conf/popl/WickersonBSC17}, where formalizing the underlying relations
+of memory models in Alloy
+allowed the authors to generate tests that
+distinguish subtly different 
+memory consistency models, and many similar
+analyses.
+
+%\item 
+Dynamic as well
+as runtime verification methods
+can draw immense benefits through
+formal methods guided tools.
+%
+Formal methods can play
+a significant role in all critical 
+design choices such as 
+flowing traces into a checker,
+shifting between offline and online
+analysis, and the use of statistical (sampling)
+based approaches to reduce the amount of
+tracing done while providing
+probabilistic guarantees as
+in~\cite{DBLP:conf/asplos/BurckhardtKMN10}.
+
+%\end{compactitem}
+
+\fi
+
+\ignore{=========> 
+
+Contracts and dynamic verification methods have been proposed by Thakur and Hovland (ANL).
+
+ 
+ 
+ Formal methods are of unquestioned status in hardware design. Here are
+ some examples:
+ 
+\begin{itemize}
+\item No chip ships without functional equivalence verification.
+
+\item Floating-point hardware and cache coherence protocol engines on 
+ microprocessors are formally verified for every major chip.
+ 
+ \item Symbolic execution methods were applied to the Intel Core i7 microarchitecture, helping replace hours of wasteful conventional simulation and testing with formally driven execution that offers coverage guarantees [Kaivola’09]
+ 
+\end{itemize}
+
+Even so, full-chip formal verification is impractical.
+But even here, semi-formal methods are employed, for example
+assertions are expressed in languages such as System Verilog
+and these properties are verified using industrial CAD tools
+that employ the latest in BDD/SAT reasoning methods
+including methods that perform property-driven reachability
+and pruning based on methods such as
+IC3 and Interpolation, 
+
+While formal methods have not been widely applied to HPC
+software, there are many promising formal and semi-formal
+methods that show significant
+promise \S\ref{sec:sw-fv-promising-methods}
+ 
+ \subsubsection{Difficulties of using formal methods in HPC applications}
+ 
+ [[ Summarize from slides ]]
+ 
+ \subsubsection{Specific formal methods objectives}
+ 
+   \paragraph{Correctness of compilers, transformation Stacks}
+   % deep compilation chains, KOKKOS, Raja; Their correctness
+   
+   \paragraph{Correctness of libraries}
+   % verified math libraries
+   
+   \paragraph{Correctness of runtime systems support structures}
+   % locks, transactions, ...
+    
+   \paragraph{Runtime verification methods, monitoring}
+   % Interface automata, trace monitoring
+   
+   \paragraph{Formal Methods : Extensions needed
+    to advance in HPC?}
+    
+     
+\begin{itemize}
+\item Computer-assisted proofs - need new theories, new techniques. One example is 1D wave equation (Stephen citation)
+
+
+
+\item Statistical testing assertions. 
+
+\item Hardware level traces collection 
+
+\item Extensions to contracts to deal with concurrency dialects
+
+\item Narrow gap between the low level traces and human understanding of the code - traceability backwards, explanation of errors, inverse mapping relation should be specified, abstractions, visualization techniques to explain correctness problems. Video game interface? :) 
+
+\item AI alone isn’t so powerful, human alone isn’t so powerful => Centaur type of technologies. 
+
+\end{itemize}
+
+   \paragraph{Composing codes (from slides): New Research} 
+   
+ 
+\begin{itemize}
+\item Contracts for specifying parts of a program (function, class, any module we want), have requirements, certain things are ensured.
+
+\item For HPC there is a lot missing from contract languages, mostly anything that deals with concurrency
+
+\item Data structures, the amount is large. Rewrite code to make data structures compatible, or translate and move back and forth. Bad options. Runtime costs, memory overhead, complexity in the code, data movement. Solution: clean interfaces. Performance reasons. Need to technique to get isolation while avoiding performance costs. 
+
+\item How inefficient and unsafe existing solutions are
+
+
+\item Modularization of the proofs. That is what contracts do for you. DSL proof languages . 
+
+\item Deterministic automata, NASA example (Ganesh)
+
+\item Using synthesis to learn model about the behavior of the code you don’t understand.  Used in Android. (Armando example)
+
+\item Need to verify that code meet the interface. 
+
+\item IVY – Microsoft (Koushik example) – interface specification. Used to check tiling interface. Very close to interface automata. 
+
+\item Issue of units of multi-physics code. Reference ontology? What it is that you are passing?  Fortress made a lot of noise about that. 
+
+\item Mathematics of coupling codes are not well understood. Scale bridging is one of the big challenges. 
+
+\end{itemize}
+
+
+<==========}

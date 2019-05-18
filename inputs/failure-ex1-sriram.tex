@@ -1,0 +1,6 @@
+\begin{WrapText}
+\footnotesize
+{\large \textbf{Undoing an optimization leads to a difficult bug}} \\
+
+Tensor contraction expressions in Coupled Cluster methods involve products of multiple anti-symmetric tensors. In NWChem, these expressions are computed as a chain of pairwise tensor contraction to minimize operation count. An effort to reoptimize these contractions in the new generation of tensor contraction engine (TCE) by undoing the chaining and reoptimizing the contraction sequence in the existing TCE led to incorrect results. Isolating the source of the error was a manual process: transforming subsets of the contractions and checking for differences. After months of effort, it was found that, depending on the chaining, an additional coefficient needed to be introduced in a key intermediate step, referred to as symmetrization. Explicit specification of the optimization rules and checking whether or not the transformations satisfy the rules could have identified this bug quickly.
+\end{WrapText}

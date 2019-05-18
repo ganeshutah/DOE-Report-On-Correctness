@@ -1,0 +1,30 @@
+% by ganesh
+\begin{WrapText}
+\footnotesize
+{\large \textbf{Heterogeneity-caused arithmetic divergence results in deadlock}}\\
+  In a recent project~\cite{xsede13-porting-bug},
+an attempt to port some of the MPI processes to run on
+Xeon-Phis while leaving others running on Xeons
+caused a curious deadlock that took days to debug.
+%
+The root cause was the Xeon-Phis calculating the number of
+messages to be sent (through an expression
+$\lfloor p/c\rfloor $) differently from how the Xeons calculated
+the number of messages to be received (also governed by $\lfloor p/c\rfloor$).
+%
+Unfortunately, the developers had not applied due precautions
+to their compilation flags, resulting in $63$ messages 
+being sent but only $62$ attempted to be received, which
+then caused the deadlock.
+%
+This bug tells us that a 
+combination of factors---processors
+being different, floating-point 
+roundoff differing
+due to the inconsistent use of 
+compiler optimization flags, and
+the delicate MPI semantics allowing
+the number of receives posted to exceed
+the number of sends posted (but not
+vice versa)---may  lead to bugs.
+\end{WrapText}

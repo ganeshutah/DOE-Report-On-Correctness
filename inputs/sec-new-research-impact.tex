@@ -1,0 +1,645 @@
+﻿
+%\subsection{Targeted impact periods and goals}
+%===
+
+
+
+In this section, we identify extensions to  existing state-of-the-art practices and research needed to make the correctness techniques described so far work in the context of HPC applications.
+%
+\ggc{Our description covers static methods~\S\ref{sec:static-methods}, dynamic methods~\S\ref{sec:dynamic-methods}, debugging \S\ref{sec:debugging}, and pragmatic issues~\S\ref{sec:pragmatic-thrusts}.}
+
+
+
+%\subsection{Formal methods thrusts\ASGNMT{Ganesh (Lead), Steve, Koushik}}
+%===
+%--\input{inputs/subsec-formal-methods.tex}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%
+%We highlight the following list of topics
+%as highly promising and 
+%exemplar (no means exhaustive) directions
+%to pursue in HPC applications of formal
+%methods.
+
+%\begin{compactitem}
+%\item 
+\ignore{Need to figure out where this text from GG goes:
+Formal methods based on automata-theoretic modeling can be applied to expressing component interfaces in the form 
+of interface automata (evolved at UCB in the early 1990s by
+Henzinger et al), or learning the behavior of code that a human expert
+does not understand (the latter has been
+successfully applied in the Android 
+operating system context).
+}
+%\item 
+%Formal methods can help narrow the gap between low level traces and human understanding of the code. These inverse-mapping relations are  crucial to create in order to explain bugs in higher level terms.
+
+%\item 
+%Results obtained from recent efforts, such as from the D-TEC project at MIT, help transform stencil code written in Fortran to a DSL (Halide), which is then code generated and optimized to any hardware platform, with formal verification that the transformation is correct.
+
+\ignore{
+%\item 
+Given the shift toward automated data layout and iteration-space optimizations achieved through
+portability layers such as 
+RAJA~\cite{RAJA-LLNL-TR}
+and 
+Kokkos~\cite{DBLP:journals/jpdc/EdwardsTS14},
+the integrity of such ``tall compilation stacks'' 
+can become single points of failure
+due to bugs they can introduce in
+all their generated code. 
+%
+On the flip side, these stacks can also serve
+as
+{\em single opportune points of intervention}
+for maximally impactful uses of formal methods.
+
+%\item 
+Formal methods can provide the underpinnings
+for code generation, for example
+for different data layouts. The generated
+code can provide a consistent representation, as well
+as automation of the tradeoff-space exploration. Code
+generation may also be able to encompass
+the generation of complex data structures that are not feasible for humans to originate.
+}
+
+%\item 
+%For floating-point arithmetic and associated error versus performance tradeoff analysis, formal methods can provide safety-nets for %enabling what practitioners like to do---i.e., push
+%on performance while skimping on precision.
+%Formal methods are essential
+%to define what is safe for the
+%situation at hand (error containment, ensuring convergence), as floating-point precision tuning 
+%cannot be done without modeling the usage context.
+
+%\item 
+\ignore{Need to figure out where this text from GG goes:
+In the area of formal shared memory consistency models, formal methods are the {\em only game in town} in the sense that ad hoc testing 
+does not ensure anything.
+%
+More importantly, formal methods can eminently 
+point to formalized testing adaptations, as
+in a recent paper~\cite{DBLP:conf/popl/WickersonBSC17}, where formalizing the underlying relations
+of memory models in Alloy
+allowed the authors to generate tests that
+distinguish subtly different 
+memory consistency models, and many similar
+analyses.
+}
+
+%\item 
+%Dynamic as well
+%as runtime verification methods
+%can draw immense benefits through
+%formal methods guided tools.
+%
+\ignore{
+Formal methods can play
+a significant role in all critical 
+design choices such as 
+flowing traces into a checker,
+shifting between offline and online
+analysis, and the use of statistical (sampling)
+based approaches to reduce the amount of
+tracing done while providing
+probabilistic guarantees as
+in~\cite{DBLP:conf/asplos/BurckhardtKMN10}.
+}
+%\end{compactitem}
+
+
+
+\ignore{=========> 
+
+Contracts and dynamic verification methods have been proposed by Thakur and Hovland (ANL).
+
+ 
+ 
+ Formal methods are of unquestioned status in hardware design. Here are
+ some examples:
+ 
+\begin{itemize}
+\item No chip ships without functional equivalence verification.
+
+\item Floating-point hardware and cache coherence protocol engines on 
+ microprocessors are formally verified for every major chip.
+ 
+ \item Symbolic execution methods were applied to the Intel Core i7 microarchitecture, helping replace hours of wasteful conventional simulation and testing with formally driven execution that offers coverage guarantees [Kaivola’09]
+ 
+\end{itemize}
+
+Even so, full-chip formal verification is impractical.
+But even here, semi-formal methods are employed, for example
+assertions are expressed in languages such as System Verilog
+and these properties are verified using industrial CAD tools
+that employ the latest in BDD/SAT reasoning methods
+including methods that perform property-driven reachability
+and pruning based on methods such as
+IC3 and Interpolation, 
+
+While formal methods have not been widely applied to HPC
+software, there are many promising formal and semi-formal
+methods that show significant
+promise \S\ref{sec:sw-fv-promising-methods}
+ 
+ \subsubsection{Difficulties of using formal methods in HPC applications}
+ 
+ [[ Summarize from slides ]]
+ 
+ \subsubsection{Specific formal methods objectives}
+ 
+   \paragraph{Correctness of compilers, transformation Stacks}
+   % deep compilation chains, KOKKOS, Raja; Their correctness
+   
+   \paragraph{Correctness of libraries}
+   % verified math libraries
+   
+   \paragraph{Correctness of runtime systems support structures}
+   % locks, transactions, ...
+    
+   \paragraph{Runtime verification methods, monitoring}
+   % Interface automata, trace monitoring
+   
+   \paragraph{Formal Methods : Extensions needed
+    to advance in HPC?}
+    
+     
+\begin{itemize}
+\item Computer-assisted proofs - need new theories, new techniques. One example is 1D wave equation (Stephen citation)
+
+
+
+\item Statistical testing assertions. 
+
+\item Hardware level traces collection 
+
+\item Extensions to contracts to deal with concurrency dialects
+
+\item Narrow gap between the low level traces and human understanding of the code - traceability backwards, explanation of errors, inverse mapping relation should be specified, abstractions, visualization techniques to explain correctness problems. Video game interface? :) 
+
+\item AI alone isn’t so powerful, human alone isn’t so powerful => Centaur type of technologies. 
+
+\end{itemize}
+
+   \paragraph{Composing codes (from slides): New Research} 
+   
+ 
+\begin{itemize}
+\item Contracts for specifying parts of a program (function, class, any module we want), have requirements, certain things are ensured.
+
+\item For HPC there is a lot missing from contract languages, mostly anything that deals with concurrency
+
+\item Data structures, the amount is large. Rewrite code to make data structures compatible, or translate and move back and forth. Bad options. Runtime costs, memory overhead, complexity in the code, data movement. Solution: clean interfaces. Performance reasons. Need to technique to get isolation while avoiding performance costs. 
+
+\item How inefficient and unsafe existing solutions are
+
+
+\item Modularization of the proofs. That is what contracts do for you. DSL proof languages . 
+
+\item Deterministic automata, NASA example (Ganesh)
+
+\item Using synthesis to learn model about the behavior of the code you don’t understand.  Used in Android. (Armando example)
+
+\item Need to verify that code meet the interface. 
+
+\item IVY – Microsoft (Koushik example) – interface specification. Used to check tiling interface. Very close to interface automata. 
+
+\item Issue of units of multi-physics code. Reference ontology? What it is that you are passing?  Fortress made a lot of noise about that. 
+
+\item Mathematics of coupling codes are not well understood. Scale bridging is one of the big challenges. 
+
+\end{itemize}
+
+
+<==========}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsection{Static methods\ASGNMT{Armando (lead), Steve, Ignacio, Sriram}}
+%===
+\label{sec:static-methods}
+
+\newcommand{\skc}[1]{}
+
+Static techniques for program analysis and verification could help increase confidence in HPC results, as well as reduce development time by reducing the effort needed to track down and fix bugs. 
+%This potential research agenda can be broadly divided into the following \ggc{thrusts}: \skc{a runtime-system focused thrust and a numerical algorithms focused thrust.}
+%
+\ggc{This potential research agenda can be broadly divided into the following \ggc{thrusts}: runtime
+focused thrust~\S\ref{subsec:rt}, 
+numerical algorithms
+thrust~\S\ref{subsec:numerical},
+specification thrust~\S\ref{subsec:spec},
+and thrust towards verification of compilers and
+libraries~\S\ref{subsec:compilers-libraries}.}
+
+\subsubsection{Runtime system focused thrust}
+\label{subsec:rt}
+
+
+Many recent successes in applying formal reasoning techniques to systems software could be applied directly to the runtime systems underlying a lot of HPC codes. In particular, the MPI and OpenMP runtimes could be good targets for such an effort. 
+
+\input{inputs/sec4-new-research-gist.tex}
+
+There is a wide range of approaches that could be applied to these runtimes; at one end, we could attempt to verify these runtimes for the absence of memory errors and race conditions. At the other extreme, recent successes in the development of fully verified system components, from file systems to compilers, suggest that it would be possible to develop fully verified implementations of at least some parts of the MPI or OpenMP runtimes. 
+
+Another potential target for this approach is the compiler itself; there is already significant work on verified compilers, but additional resources could help push this work to focus on verifying the kinds of optimizations that are most relevant to HPC code, such as cache optimizations.
+
+This agenda would have the benefit of immediately eliminating entire classes of bugs from HPC systems without the need for any buy-in from the HPC application development community; application developers would just  swapp one library for another. 
+
+%\paragraph{Short-term targets} 
+There are a variety of techniques that can find memory errors and data-races in existing software. Applying these techniques to the runtimes that support most HPC applications could yield some insights, helping improve confidence on such systems. 
+%
+%\paragraph{Long-term targets}
+%
+A more ambitious goal would be to gradually rewrite major components of the standard HPC runtime using mechanisms more suited for verification. The goal would to move beyond verifying  the absence of memory errors and data races, and towards verifying important functional properties, such as ensuring that no messages will be dropped by the runtime. In addition to the implementation effort, this approach requires new research into the formalisms necessary for verifying such properties. 
+
+
+
+\subsubsection{Numerical algorithms focused thrust}
+\label{subsec:numerical}
+
+The second thrust would involve verifying the numerical computations themselves, under some assumption that the underlying runtime systems are correct. This has the potential for much bigger payoff relative to verifying the runtime system, \ggc{given that most HPC developers run into errors of their own making more often than they run into MPI bugs.} 
+
+On the other hand, this also requires significant new research around two major issues: reasoning about numerical and floating point computation, and making it possible for HPC users to write specifications. 
+
+
+\paragraph{Automated reasoning for reals and floating point}
+
+Numerical computations can be analyzed at two levels; first, they can be analyzed assuming ideal, real-valued computation. In reality, however, computation involves floating-point numbers. In many settings, the assumption of real-valued computation can help uncover outright bugs in the computation, but reasoning about floating points is necessary to reason about issues such as convergence and precision. 
+
+There has been significant recent work on automated reasoning techniques for real-valued computation. For example, the \ggc{dReal~\cite{dReal}} system is able to reason about logical formulas involving transcendental functions such as $sin$, $cos$, $log$ and exponents, as well as formulas involving integrals. 
+%
+\ggc{Support for transcendental functions is provided
+by recent tools such as FPTaylor~\cite{fm15-fptaylor} that underlies FPTuner~\cite{DBLP:conf/popl/ChiangBBSGR17}, a rigorous floating-point precision tuner.
+%
+These tools are yet to be scaled to the sizes often required by DOE physics codes.} 
+
+
+The complexity of reasoning about numerical code depends on the gap between the specification and the implementation. For example, in checking that a tiled implementation of a computation is equivalent to an un-tiled version, the gap between specification and implementation is relatively small. Such a verification problem does not require deep reasoning about the properties of real-valued or floating-point computation, since both versions are performing the same computation, only in different order, so a modern verification tool can abstract away the details of the floating-point computation and focus on verifying that the loop structures are equivalent. This level of reasoning can be achieved with existing technology, and is indeed performed by systems such as \ggc{STNG~\cite{STNG},} which reasons about the equivalence between low-level stencil implementations and their high-level specifications. 
+
+
+At the other extreme, reasoning about the fact that Conjugate Gradient will indeed find the solution of a linear system of equations is extremely challenging, and requires detailed knowledge of linear algebra to be encoded in the verification system. Doing so is likely quite possible and could yield substantial benefits in correctness. 
+
+For floating-point arithmetic and associated error versus performance tradeoff analysis, formal methods can provide safety nets for enabling what practitioners like to do---i.e., push
+on performance while skimping on precision.
+Formal methods are essential
+to define what is safe for the
+situation at hand (error containment, ensuring convergence), as floating-point precision tuning 
+\ggc{is often not that effective} without modeling the usage context.
+
+\ggc{\paragraph{Unsafe optimizations for floating point:} One aspect of compilation that has received very little attention is how fast the code can be made by pursuing ``unsafe math'' optimizations (upto 5 times faster for some codes, thus a highly tempting option), and yet, these optimizations introduce far more than the normal IEEE round-off error. A recently developed tool FLiT~\cite{FLiT} is able to portray the number of different answers one can obtain even for a single test routine. Unfortunately, the meanings of compiler optimization flags vary across compilers. All this can lead to result variability to an uncalibrated extent, affecting both correctness and reproducibility. This is another aspect of the aforesaid error versus performance trade-off analysis that merits rigorous support.
+}
+
+\subsubsection{Specifications Thrust} 
+\label{subsec:spec}
+
+One of the major roadblocks in the adoption of verification and formal reasoning technology is the difficulty of writing formal specifications. There are two ways in which other communities have addressed this problem. First is to focus on general properties that every program should satisfy (such as memory safety or race freedom). Tools can be designed to verify such properties without the need for the tool user to have to provide individual specifications for every program. 
+
+Second is to focus on specific domains and write specification languages that are tailored to those domains. 
+%
+In the HPC context, there is a recent trend towards domain specific languages that has been fueled by recent successes in generating very high-performance implementations from high-level domain specific notations. Examples of such high-performance systems include TCE~\cite{baumgartner2005synthesis,hirata2003tensor}, Halide~\cite{DBLP:conf/pldi/Ragan-KelleyBAPDA13} and Spiral~\cite{puschel2005spiral}. 
+
+A move towards domain-specific languages can help sidestep the verification problem and make it possible to introduce verification technology without burdening the user. This can be done in a few different ways. First, verification can serve as a form of translation validation. Most production compilers are developed by large organizations and used on millions of programs,\ggc{ so they have no obvious errors.\footnotemark (the CSmith~\cite{regehr-pldi11} work has shown how buggy production compilers can be).}
+%
+\footnotetext{\ggc{“There are two ways of constructing a piece of software: One is to make it so simple that there are obviously no errors, and the other is to make it so complicated that there are no obvious errors.” - Tony Hoare}}
+%
+Domain-specific languages are less likely to have either of these characteristics, so they are more likely to have bugs. A general verification infrastructure to guarantee that the output of the DSL compiler is consistent with its input could be very useful. Moreover, the DSL compiler could provide a trace of its derivation steps that could significantly simplify the verification task. 
+%
+Verification could also help in those (hopefully rare) cases where the output of the DSL compiler needs to be modified for any reason.
+
+\ignore{===>
+More ambitiously, a general DSL construction infrastructure could be developed which incorporates verification as an inherent goal in the DSL. Some of the work on the Fiat~\cite{Fiat} system points in this direction. Fiat is a system that allows an expert to define a DSL, together with proof rules for the DSL so that users can get verified implementations directly from high-level programs in the DSL. This technology has only been applied to domains very far from HPC, such as data-processing, but similar technology could have a big impact in HPC. Another system in the same spirit, Bellmania~\cite{Bellmania}, showed the potential for a similar approach to develop a DSL for dynamic programming problems that could generate verified implementations that were parallel and more cache efficient than the standard dynamic programming implementations. 
+<===}
+
+ 
+
+Recent work in the context of stencils~\cite{Kamil:2016:VLS:2908080.2908117} has shown that domain-specific compilers can interact with verification in other ways. In the STNG system, a low-level stencil computation is analyzed to extract a high-level specification of the computation in the Halide DSL. This automatic extraction of the specification can make it possible to leverage the power of the high-performance DSL in the context of a low-level legacy implementation. 
+
+\label{DESL}
+A DSL can also be embedded in a regular ``host'' programming language; simple C is perfectly able to express loops for linear algebra, stencils, and solvers in a clear and compact ``textbook'' way and high performance codes can be automatically generated from such specifications~\cite{meister-rstream}; no DSL is needed for such domains.  A Domain-Specific Embedded Language (DESL)~\cite{hudak1997domain} has many advantages such as avoiding a ``tower of Babel'' of many different DSLs, clear semantics for linking with other modules, and benefiting from ongoing research and development for the host language.  Investment in optimization and verification of the host language benefits all programs in that language.  
+\ignore{==>
+Work for these domains based on C would bring the benefits of the large deep specification research community.
+<==}
+
+\if 0
+\subsubsection{Leftover}
+
+
+{\small\em From slides.}
+
+\begin{itemize}
+\item Reducing the overhead for using tools
+
+\item Formal specification and verification of memory consistency models
+
+\item Tools for ensuring that memory consistency models are used correctly
+
+\item Verification at Runtime  (dynamic verification)
+
+\item Certified runtime (progress properties, concurrency properties, safety, liveness, synchronization, weak memory models, checkpointing/rollback, deadlock, atomicity, termination)
+
+\item HPC libraries full verification (numerical libraries, communication, synchronization libraries):
+
+\item Optimizations verification
+
+\item Compilers certification
+
+\item Correctness techniques that would scale to larger levels of parallelism and scale
+
+\item Development technologies - IDEs are powerful to finding bugs, integrate verification with HPC programming
+
+\item Software for debugging tools: understand what mistake you made that led to the bug.  Bug localization. Tools available today, but not open source (Costin will cite).  Abstract debugging of the code to run at small scale. Automatic localization and diagnostics.
+
+\item Specification and contracts techniques for parallel programming
+
+\end{itemize}
+
+
+\subsubsection{Medium term thrusts}
+
+\begin{itemize}
+\item Extensions of existing specification and contract languages to deal with issues central to HPC, such as concurrency, numerical properties, and linear algebra.  
+
+\item Extensions of existing verification techniques to handle the C++ and Fortran languages.
+
+\end{itemize}
+
+{\small\em From the slides:
+Discuss focus areas that DOE ASCR should address in order to meet  DOE 	scientific community correctness needs (~1 hour)
+Mid to Long range Impact (Research)}
+
+\begin{itemize}
+\item 
+End-to-end verification of molecular dynamics code (verify that energy will be conserved, or that is reversible and still achieve high performance)
+
+\item Formal specification and Verification of  critical code in C++: Nwchem-EX 
+
+\item Formal specification and Verify/certify Petsc
+
+\item Formal specification and Verify/certify OCR, Kokkos, Raja, Mpich, OpenMP, Charm++
+
+\item Formal specification and Verify/certify  Automatic Differentiation, semantic transformations
+
+\item Formal specification of compiler optimizations/transformations
+
+\item Formal speciffication and verificaiton of a complete workflow (example?)
+
+
+\item Priority: will attempt consensus over conference calls. Need to explain certification and how is that different from verification.
+\end{itemize}
+
+\subsubsection{Long term thrusts}
+ 
+\begin{itemize}
+\item Formal specification and verification of a complete molecular dynamics program.
+
+\item Development of an Automatic/Algorithmic Differentiation tool that outputs a “certificate”  that can be automatically checked and which proves that the output program is the derivative of the input program. 
+
+\end{itemize}
+ 
+ \fi
+
+\subsubsection{Verification of compilers and libraries \ASGNMT{Armando (lead), Kouskik, Sriram, Richard}}
+\label{subsec:compilers-libraries}
+ %===
+
+The compiler technology has advanced enough to automate many optimization steps: loop transformations, data layouts, vectorization, etc. HPC applications increasingly rely on optimizing compilers, auto-tuners, and optimized libraries to achieve portable performance. This trend is advantageous from a correctness perspective. Beyond verifying every manual optimization in an application, ensuring correctness of the compilers and libraries can help us ensure more parts of the software toolchain are correct.
+
+Given the shift toward automated data layout
+and iteration-space optimizations achieved through
+portability layers such as 
+RAJA \cite{RAJA-LLNL-TR}
+and 
+Kokkos \cite{DBLP:journals/jpdc/EdwardsTS14},
+the integrity of such ``tall compilation stacks'' 
+can become single points of failure
+due to bugs they can introduce in
+all their generated code. 
+%
+Code
+generation may also be able to encompass
+the generation of complex data structures that are not feasible for humans to originate.
+%
+On the flip side, these stacks can also serve
+as
+{\em single opportune points of intervention}
+for maximally impactful uses of formal methods.
+
+%\item 
+\ignore{
+Formal methods can provide the underpinnings
+for code generation, for example
+for different data layouts. The generated
+code can provide a consistent representation, as well
+as automation of the trade-off space exploration. 
+}
+
+Polyhedral optimizations involve the use of well-specified transformations implemented through complex tool chains. Whereas the test suites associated with the tool chains can catch some bugs, they can be sensitive to initialization values used for inputs \cite{DBLP:conf/popl/BaoKPRS16,schordan2014verification}. Verifying the code generated by a polyhedral optimizer, through a combination of verification, exhaustive testing, and certification, is an attractive yet feasible endeavor.
+
+\ggc{One possible route for a verified HPC compiler is to base it on CompCert~\cite{Stewart:2015:CC:2676726.2676985}.}  Most commercial and open source compilers are implemented with traditional non-certified programming techniques, making their verification difficult.  The route would follow the path of engineering the range of optimizations for HPC on an existing certified compiler. Once this is done, domain-specific embedded languages (DESLs, see Section~\ref{DESL}) implemented in the certified host language and compiler would benefit from the certification capabilities.
+
+
+\subsubsection{Other thrusts \ASGNMT{Ganesh}}
+
+\ggc{Formal methods based on automata-theoretic modeling can be applied to expressing component interfaces in the form 
+of interface automata~\cite{DBLP:conf/sigsoft/AlfaroH01},}
+or learning the behavior of code that a human expert
+does not understand (the latter has been
+successfully applied in the Android 
+operating system context).
+
+In the area of formal shared-memory consistency models, formal methods are the only satisfactory approach in that while ad hoc testing and manual reasoning may find missed cases, they do not help provide rigorous guarantees that cover {\em all possible executions} allowed by a memory model.
+
+More importantly, formal methods can eminently 
+point to formalized testing adaptations, as
+in a recent paper~\cite{DBLP:conf/popl/WickersonBSC17}, where formalizing the underlying relations
+of memory models in Alloy
+allowed the authors to generate tests that
+distinguish subtly different 
+memory consistency models.
+%, and many similar analyses.  
+
+ \subsection{Dynamic methods\ASGNMT{Costin (lead), Koushik, Ignacio}}
+ 
+%===
+\label{sec:dynamic-methods}
+
+Static methods are widely  acknowledged for their soundness and precision, but  face challenges when applied to large realistic code  bases.  Code sizes,  layers of abstraction, and  combinations of programming languages (e.g. C++ and Fortran) all pose problems to  static methods. 
+
+In recent  years, dynamic methods have emerged as a practical and  powerful alternative to  static approaches. Dynamic methods  make  inferences based on  observed execution(s) of the program. While  no  guarantees can  be provided for any other unobserved execution, the hope is these inferences  are generic and useful to developers. Tools such as Valgrind,   and Intel ThreadChecker have widespread adoption in the software community and have been shown to be able to handle very complicated codes, such as the Linux kernel. Compared to static approaches, dynamic methods require a  guided process that invloves developer feedback and steering.
+
+Dynamic symbolic execution (or concolic testing)~\cite{CACM'13,PLDI'05,FSE'05,klee:osdi:2008} is a dynamic analysis method where constraint solvers are used to steer the program execution along various feasible execution paths of a program. Though dynamic symbolic execution has been successfully applied to find subtle bugs and security vulnerabilities in sequential software,  little has been done to scale it for parallel and concurrent software~\cite{SAcav06,SAhvc06}.  Research is needed  to combine conventional model-checking and active-testing techniques~\cite{Spldi08,JNPScav09} for concurrent programs with dynamic symbolic execution to make them work for HPC programs.   
+
+\ignore{==> Ganesh fixed this: 
+\todo[inline]{Costin: I believe Ignacio added the text directly  below, but I disagree with it. I use in-situ at scale, when I can't dump state out, at small scale we just dump traces as detailed as they need to be. }
+\todo[inline]{Ignacio: I didn't add the text below. I agree with Costin that in-situ can be used at large scale.}
+<==}
+
+%\ggcmt{Dudes, split into short, medium, and long-term thrusts. Right now, it's a mish-mash.}
+ 
+Online \ggc{dynamic} analysis methods have the advantage of being 
+ deployable in production environments and 
+ in conjunction with the actual libraries 
+ available on a platform. Therefore, they are
+ practical and can provide 
+ guarantees pertinent to a particular realization. However, these approaches cannot store or process complete traces and need to minimally perturb the application. Online analysis can benefit from further research into the identification and analysis of relevant interleavings (the partial order) in the presence of multiple concurrency models.
+% 
+ %, and (2) semi-automating the extraction and insertion of user assertions.
+%
+Offline \ggc{dynamic} trace analysis methods can afford to perform multiple potentially expensive error analysis passes on the traces from large-scale runs. These methods rely on methods to lower the tracing overhead, including the identification and discovery of relevant events to instrument so as to perform the analyses of interest. 
+
+Both online and offline analysis require research to improve their scalability with concurrency and input size. Often, traces contain low-level operations not immediately correlated with the source level. Examples include basic-block level fine-grained control-flow information or load/store information. 
+%
+Formal methods can help narrow the gap
+between low level traces and human understanding
+of the code. These inverse-mapping relations are 
+crucial to explain bugs in higher
+level terms.
+Formal methods can play
+a significant role in critical 
+design choices such as 
+flowing traces into a checker,
+shifting between offline and online
+analysis, and the use of statistical (sampling)
+based approaches to reduce the amount of
+tracing done while providing
+probabilistic guarantees (e.g.,~\cite{DBLP:conf/asplos/BurckhardtKMN10}).
+
+If support for automated code transformation is desired, research is needed in developer presentation tools that can provide reverse mappings across multiple levels of abstraction. Ideally, the tools could suggest source-level transformations to fix an identified correctness problem. In a large HPC application composed from many libraries, these analyses should be composable and not interfere in terms of correctness or performance. While they can aid in debugging HPC applications, bugs in these analyses can dissuade user adoption. A well-constructed verified toolbox of analysis can complement verified HPC runtimes in ensuring that the bugs identified are indeed from the user's application.
+
+%\item the development of new interface automaton learning methods that can learn key module interface protocols from executions emanating from a prior (“golden”) design, and applying it to a new implementation variant.
+%\end{enumerate}
+ 
+\if 0
+Short term research goals:
+ \begin{itemize}
+ \item scalability with concurrency and input size.
+ \item new and useful analyses for existing  programming languages, need some examples
+ \item domain specific analyses that  can  handle the semantics of a  certain library or code base.
+ \item composition of analyses developed for  separate libraries
+ \end{itemize}
+ 
+ 
+ Medium  term research goals:
+ \begin{itemize}
+ \item A common concern of both approaches is correlating trace behavior with high level application characteristics and developer feedback. Ideally the tools are able suggest source level transformations to fix an identified correctness problem. 
+ \item It is often the case that traces contain low level operations that are not immediately correlated with the source level. Examples include basic block fine grained control flow information or load/store information. If support for automated code transformation is desired, research is needed in developer presentation tools and reverse mappings across multiple levels of abstraction.
+ \end{itemize}
+
+Long term goals:
+\begin{itemize}
+\item  automated verification usign a  combination of static and dynamic methods
+\end{itemize}
+
+\fi 
+
+\subsection{Debugging\ASGNMT{Ignacio (lead), Koushik, Costin}}
+%===
+\label{sec:debugging}
+
+%{\small\em Blah blah blah of course!! Then these by Ignacio.}
+
+Traditional debugging tools and techniques help to identify the root cause of errors by allowing programmers to control the application and to inspect the application’s state (e.g., value of variables) in an execution. Parallel debuggers control and inspect the execution of many threads and processes, a task that can be computationally expensive given the high degree of parallelism in today’s largest HPC systems. A disadvantage of these methods is that they are manual in nature, i.e., the programmer has to reason about the program and manually find the bug. Advanced debugging techniques and tools help programmers to automatically pinpoint bugs---some with fine granularity, e.g., lines of code. These automatic methods, however, are mostly dynamic (i.e., they can only make decisions based on a given input and execution) and may suffer from high false-positive rates. There exists complementary techniques that aid in the debugging process, such as record-and-replay techniques, which allow programmers to deterministically reproduce bugs. These techniques are of great help to isolate software defects that manifest themselves rarely or non-deterministically. %, i.e., they become visible only one out of N times.
+
+Extensions to the state-of-the-art debugging methods are required in the following areas:
+
+\begin{itemize}
+\item  Scalable debugging tools to isolate software defects that manifest at large scale, where scale represents number of threads, number of processes, and/or input size. Two categories are important in this area: (i) scalable tools to help control and analyze a program in a large-scale execution when a bug manifests itself, and (ii) debugging tools to isolate scale-dependent bugs using small-scale runs.
+
+\item Accurate automatic debugging techniques to help programmers automatically find the origin of errors to a fine degree of granularity, such as the line of code, function, or code component. In particular, research is needed to improve the accuracy of existing techniques in this category. Metamorphic testing is promising in this regard~\cite{uplee-kanewala}.
+%The adoption and extension of automatic static analysis methods in Integrated Development Environments (IDE) to catch bugs in HPC programs when programing is of great valuable.
+
+\item Methods to control non-determinism when debugging, such as record-and-replay, thread/process schedule controlling, and thread/process schedule enforcing techniques, are needed.
+
+\end{itemize}
+
+%\cicmt{symbolic debugging and concurrency independent debugging (debug at small scale, infer behavior at large scale or run at scale, extract threads which you replay and debug).}
+
+
+\subsection{Pragmatic thrusts\ASGNMT{Koushik (lead), Steve, Costin, Paul}}
+
+\label{sec:pragmatic-thrusts}
+
+      \paragraph{Smart IDEs.}  In the recent years, Integrated Development Environments (IDEs) have gotten smarter in dicovering bugs and common programming mistakes at development time.  As a programmer types her/his program, these IDEs perform on-the-fly code analysis and instantaneously report syntax errors and complex static errors.  Examples of such smart IDEs include \ggc{Eclipse, Intellij IDEA~\cite{IntelliJ-IDEA}, and CLion~\cite{CLion}.} These IDEs not only perform on-the-fly analysis and report static programming errors, they also utilize state-of-the-art program analysis techniques to help programmers with code refactoring and navigation.  In practice, smart IDEs have been found to significantly improve programmer productivity.  
+%
+%However, when it come to HPC programs, programmers still prefer to use conventional editors such as \texttt{vi} and \texttt{emacs}.  There are a few reasons behind this pushback: 
+%
+In supporting HPC software development, smart IDEs can be extended to find concurrency related bugs, such as data races, deadlocks, and atomicity violations. Existing smart IDEs cannot reason about hybrid programming models often used in HPC programs.  Correctness tools and techniques can be made easily accessible to HPC programmers if the formal program analysis techniques developed for HPC programs can be integrated into these IDEs.  %Such integration in smart IDEs will help programmers avoid common programming mistakes that programmers usually make while writing HPC programs.  
+
+\paragraph{Software design, specification, and testing practices.}
+%{\small\em How to get beyond printf debugging?}
+%      {\small\em [Siegel, Costin, Hovland]}
+%
+%
+An HPC correctness campaign can target a few key steps in the software development lifecycle to improve our confidence in their correctness. First, many of the target DOE applications for correctness verification are monolithic and lack formal specification.  Research is needed into methods for ``reverse engineering'' specifications, such as the lifting technique implemented in \ggc{ Helium~\cite{DBLP:conf/pldi/MendisBWKRPZA15}.}  This process will be helped by the design of tools and techniques to decomposing monolithic applications into verifiable units and composing the results of verification.
+%
+Second, conventional software engineering teams employ code guidelines, such as Code C++ guidelines, Google style guide, etc. to avoid common design and programming errors. Many of these coding guidelines are associated with tools that can check for conformance. The availability of such tools for HPC software (e.g., precluding the use of \textsf{MPI\_{}COMM\_{}WORLD} would help improve software quality and end-user's trust in their correctness.
+%
+Third, a significant challenge in regression testing of computational science applications is assessing when a change in the program output is significant.  Often, mandating that the output remain bitwise equivalent is too strong a requirement and may not be possible in the case of non-deterministic applications, but selecting an arbitrary numerical tolerance may result in missed bugs.  Research is needed to adapt regression testing to applications with large amounts of floating-point arithmetic.
+
+\if 0
+\begin{itemize}
+\item  A significant challenge in regression testing of computational science applications is assessing when a change in the program output is significant.  Mandating that the output remain bitwise equivalent is often too strong a requirement and may not be possible in the case of non-deterministic applications, but selecting an arbitrary numerical tolerance may result in missed bugs.  Research is needed into how to adapt regression testing to applications with large amounts of floating point arithmetic.
+
+
+\item Identification and documentation of correctness-enhancing coding standards (e.g., precluding the use of MPI\_COMM\_WORLD).
+
+\item Some of the target DOE applications for correctness verification are monolithic and lack formal specifications.  Research is needed into methods for “reverse engineering” specifications, such as the lifting technique implemented in Helium [Mendis15].  Additional research is needed into decomposing monolithic applications into verifiable units and composing the results of verification.
+\end{itemize}
+\fi
+
+% \subsubsection{Best practices}
+%This list could be Best Practices, Pragmatics,
+% or SW Engg:
+% {\bf Best practices needed.}
+
+\paragraph{Bug Repositories.}
+
+Many open-source projects maintain public bug tracking systems, which can be used to identify bugs found ``in the wild.'' These  repositories encourage the development of practically useful tools and to evaluate research tools on real-world bugs. While many HPC projects are open source, the use of bug-tracking systems needs to be promoted among the DOE application developers. Going beyond bug-tracking systems, developing guidelines for sharing bugs and code snippets to reproduce them can accelerate the development of tools that can handle HPC-specific correctness challenges. Ideally, tools can help automatically mine bug repositories to isolate bugs from other sources of errors (software configuration, user errors, etc.), validate the bugs, and extract relevant code harness from the patches used to close a bug.
+%
+\ggc{Even the study of job failures on HPC clusters and the reasons for 
+such failures  (e.g., \cite{job-failures-in-hpc}) would be valuable for the community to
+compile and share.}
+
+\if 0
+\begin{itemize}
+\item  
+ Public sharing of bugs, methods of sharing bugs. 
+ 
+ \item Automated mining techniques for bug repositories.  Workshop or conference for “most elegant bugs.”  Open source software have bug repositories.  Need standards for bug repositories. Projects must be required to create repositories according to a standard. Need to separate real bugs from just problems a user ran into. Vetting process for validating a bug. Need to submit a patch in order to close a bug report.  Code harness /code slices relevant to a bug. 
+
+\item  Competitions for formal methods applied to HPC. Outcome is a large repository. (Stephen will cite examples). Multi-agency sponsorship at SC’17.
+
+\item  Formal methods for C++ and Fortran. Most tools are for C. 
+
+\end{itemize}
+ 
+\begin{itemize}
+\item  Best practices needed: public sharing of bugs, methods of sharing bugs.
+
+\item Automated mining techniques for bug repositories.  
+
+\item Workshop or conference for “most elegant bugs.”  
+
+\item Open source software have bug repositories.  
+
+\item Need standards for bug repositories. Projects must be required to create repositories according to a standard. Need to separate real bugs from just problems a user ran into. Vetting process for validating a bug. Need to submit a patch in order to close a bug report.  
+
+\item Code harness / code slices relevant to a bug. 
+\end{itemize}
+\fi
+
+
+\if 0
+\subsubsection{IDEs with integrated correctness checking.}
+
+Metrics: accessibility  and mine-ability of bug repositories, code complexity, composition correctness? of HPC components with verified properties, number of what is considered good examples of verified programs.
+
+{\small\em Costin: center education and outreach, similar to NERSC/NESAP. Industry outreach and coordination. Industry already provides tools (e.g Intel ThreadChecker…). We have past success stories where DOE approaches made it into Intel tools for wide adoption - roofline model in  performance tools. Same approach likely to succeed in the verification/correctness area.}
+
+\fi
+
+ 

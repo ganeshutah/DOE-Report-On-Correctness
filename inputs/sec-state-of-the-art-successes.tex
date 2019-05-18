@@ -1,0 +1,547 @@
+% by ilaguna
+\newcommand{\subheader}[1]{ \textbf{#1}}
+
+%\subsection{Current practices}
+
+\input{inputs/sec3-state-of-art-gist.tex}
+
+Today’s correctness practices comprise a body of domain-specific testing,
+and tools and frameworks to debug, pinpoint, and fix errors that escaped
+the testing phases. Most of these practices are ad hoc---they often require
+heavy-weight program instrumentation and analysis, and are tailored to 
+specific classes of bugs (e.g., data races), programing models (e.g., MPI),
+and runtime systems and platforms. In addition, they are largely not composable,
+and are often difficult to adopt in practice in the workflow of large scientific
+code bases.
+%
+As a result, it is not uncommon for programmers to end up chasing 
+elusive bugs by ``printf'' debugging. When an error is reproducible, 
+parallel debugging tools can be very helpful in diagnosing an error, 
+though this process tends to be manual and requires a significant 
+amount of domain expertise.
+%
+
+We split the state-of-the-art practices into two broad categories:
+\textit{testing} and \textit{tools for bug detection and localization}.
+
+
+\input{inputs/table_current_tools.tex}
+
+
+
+
+\subsection{Testing}
+
+Although testing scientific software is generally considered to be 
+difficult~\cite{kelly2008}, it is nevertheless the mainstay
+of today's verification
+approaches.
+%a common practice today. 
+Conventional testing, such as \textit{regression} testing, \textit{white} 
+and \textit{black box} testing, and \textit{functional} testing are used to 
+check exceptional situations and corner cases. Finer-grained levels of 
+testing, such as \textit{unit} testing, are however less common, specially 
+in legacy HPC applications~\cite{hovy2016towards}, as the effort of 
+generating these tests is difficult to justify for domain scientists.
+State-of-the-art testing practices rely on the reproducibility of results 
+under fixed inputs, and usually check domain-specific physics laws.
+Assertions are used to check expected behaviors and results at different code locations.
+
+Validation through the use of analytical solutions to check results 
+against experimental data is also employed to some degree.
+%
+Verification is also supported 
+through techniques such as 
+methods of manufactured solutions
+(checking
+against solutions to made-up idealized cases)
+as well as higher level criteria such
+as the order of convergence.
+
+%\ilcmt{Please add more (from slides): (1) Order %of accuracy: reduce the resolution and check if %results are still correct; (2) Method of %manufactured solutions: create appropriate %input to ensure the solution is expected. %Linear system example.}
+ 
+
+\subheader{Challenges of Testing.}
+The main challenge to test scientific codes is the large effort in 
+generating test cases, specially for complex multiphysics codes. 
+Tests require data input, and in HPC applications this can be very large;
+thus exhaustively and manually testing every input is infeasible. 
+An option for HPC codes is to scale down the domain, but is often 
+infeasible to do without introducing inconsistencies.
+HPC codes tend to use user-defined data types and complex and long data
+structures, which may be passed through functions, and initializing 
+these structures to create different test cases is a huge effort. 
+Non-determinism and lack of tool support are other important impediments to testing.
+
+Most testing today is limited to a small-scale setting (small number of processes and threads,
+and small input size). HPC resources are shared and it is practically 
+impossible (or at least very costly for an HPC center) to perform frequent testing 
+(e.g., nightly testing) of all applications at large scale.
+This limits the scope of bugs that can be covered by testing---it is expected 
+that the behavior that is checked at small scale extrapolates to large scale,
+though that is often not the case in practice.
+
+Some of the tools that are used to test HPC software include: tools to write 
+regression tests for numerical software, such as ATS (Automated Testing System)~\cite{ATS}
+developed at LLNL, continuous integration frameworks, such as Bamboo~\cite{Bamboo},
+and C/C++ testing frameworks, such as Google Tests~\cite{GoogleTests}, and 
+Boost Tests~\cite{BoostTests}.
+
+\subsection{Infrastructure for Bug Detection and Localization}
+
+There exists a variety of tools and techniques that have been proposed to
+detect and to isolate software defects in HPC applications. We categorize
+these frameworks in six groups:
+\textit{static analysis},
+\textit{dynamic analysis},
+\textit{formal methods},
+\textit{anomaly detection},
+\textit{non-determinism control}, and
+\textit{parallel debugging}.
+We present a short definition of each of these methods as follows, and Table~\ref{table:tools}
+lists some of these tools. Note that different methods are not mutually exclusive 
+and it is common for tools to use a combination of methods; for example, a tool may 
+perform static analysis in one phase, and then to perform dynamic analysis
+or formal verification in a another phase.
+
+
+
+\subsubsection{Static Analysis}
+% Basic static analysis
+Static analysis examines the code without executing the program and it is 
+perhaps the first line of defense against bugs for programmers. These checks
+are typically performed when the program is compiled and can warn the programmer
+of possible errors in the program. At the moment of writing, the Clang compiler
+has currently more than 670 diagnostic flags. Static checks are performed as well
+in Integrated Development Environments (IDE), which can detect errors even before the
+compilation phase (Eclipse~\cite{Eclipse}). Klocwork~\cite{KLOCWORK} is an on-the-fly static code analysis
+tool that is used at LLNL and other DOE laboratories to detect bugs at early stages. 
+
+% Advanced static analysis
+More advanced static analysis tools can reason about the semantics of code and find bugs
+that traditional compiler warnings cannot find. These tools may use symbolic execution
+and abstract interpretation techniques to explore all execution paths in the program.
+An example in this category is the Clang Static Analyzer~\cite{ClangStatic}.
+%\ilcmt{Should we add more advanced static analysis tools/methods?}
+
+% Correct code generation 
+While compilers perform a large number of static checks,
+this all relies on compilers being correct themselves. However, compilers
+can have bugs that often arise when performing optimizations (specially under
+concurrency~\cite{chakraborty2016})---these in turn may yield application bugs in 
+extreme cases that are very hard to isolate. The test and check of code 
+transformations that are semantic preserving
+are an active area of research~\cite{leroy2009formal}. Commercial compiler 
+vendors dedicate major resources to assembling test cases and 
+regression testing and have years of experience in the engineering of 
+compilers for correctness and performance; this is why the best 
+commercial compilers continue to outpace their open source counterparts
+in correctness.
+%\ilcmt{For Ganesh/Koushik: Could you add %more on
+%(1)	Test compiler code transformations %are semantics preserving
+%2)	Random testing of compilers, engineering %of compiler relies on good engineering, and %testing}
+
+\subsubsection{Dynamic Analysis}
+Most of the existing bug detection and localization tools for HPC perform
+dynamic analysis~\cite{CACM:Debugging}.
+Dynamic analysis involves checking correctness by executing the program with an specific
+input (or a set of inputs). There are two broad categories of dynamic analysis, 
+\textit{online} and \textit{offline}; in the former, checks are performed during the 
+application's execution time, whereas in the latter the checks are performed after
+the application has finished execution, usually by analyzing traces of the application
+that were gathered during the application run. For HPC programs that run on multiple 
+processes (e.g., MPI programs), traces are usually gathered from all processes and
+then aggregated for further analysis.
+
+A large group of dynamic checkers are \textit{memory checkers} since many bugs
+arise due to incorrect use of memory. The Valgrind memory checker~\cite{Valgrind}, for example,
+supports MPI programs and can perform memory checks in all MPI processes. A subgroup
+of memory checkers, detects data races in multi-threaded programs, including checking
+in heterogeneous systems with accelerators. The Intel Inspector~\cite{IntelInspector} 
+and ThreadSanitizer~\cite{ThreadSanitizer} support data-race detection of pthread programs.
+ARCHER~\cite{ARCHER} performs data-race detection in OpenMP programs on top of 
+ThreadSanitizer and static analysis.
+
+Other dynamic analysis frameworks for bug detection are tools to detect 
+deadlocks and synchronization problems in MPI (e.g., MUST~\cite{MUST}, ISP~\cite{ISP}, and DAMPI~\cite{DAMPI}), 
+tools to detect errors at the message-passing layer (e.g., FlowChecker \cite{FLOWCHECKER}), and tools to perform progress analysis of processes to isolate the origin of hangs (e.g., Prodometer~\cite{PRODOMETER,PACTLaguna:2012}).
+
+In hybrid programming models, data races occur easily and
+are notoriously hard to find.  Conventional state-of-the-art data race
+detectors exhibit $10\times-100\times$ performance degradation and do
+not handle hybrid parallelism.  UPC-Thrille~\cite{ICS'13,PPoPP'13,SC'11,upc-thrille}
+is the first complete
+implementation of data race detection for distributed memory
+programs. In benchmark programs, UPC-Thrille found all previously known 
+data races with at most 50\% overhead when running on 2048
+cores.
+
+Finally, dynamic analysis techniques have been proposed to tune the
+precision of floating-point programs. Precimonious~\cite{SC'13} is a dynamic
+analysis approach that performs a search on the types
+of the floating-point program variables trying to lower their
+precision subject to accuracy constraints and performance goals.
+Blame Analysis~\cite{ICSE'16b} can be used to further speedup the precision tuning of
+Precimonious. Blame Analysis functions by executing floating-point
+instructions using different levels of accuracy for their
+operands. Evaluation on ten scientific programs shows that Blame
+Analysis is successful in lowering operand precision.
+
+\subsubsection{Formal Methods}
+Formal methods, which allow specification and verification of software, 
+haven been used to certain degree in HPC. The SPIN model checker~\cite{SPIN} 
+has been used in various approaches to check properties of parallel
+programing models, including MPI~\cite{MPISPIN} and 
+distributed task-based models~\cite{Murthy:2016}. 
+CIVL~\cite{CIVL} is a symbolic execution-based verifier 
+that can analyze programs using many HPC-relevant parallel programming models, 
+including MPI, OpenMP, Pthreads, and CUDA. 
+The ARCHER race detector~\cite{ARCHER} based on formal loop carry independence 
+analysis and happens-before analysis detects race conditions in OpenMP programs.
+%
+Verification of producer-consumer synchronization achieved through the use of named barriers is studied in~\cite{DBLP:conf/pldi/SharmaBA15}.
+%
+Additional success cases of formal methods are listed in Section~\ref{sec:sw-fv-promising-methods}.
+
+
+
+
+
+
+%\ilcmt{Ganesh/Koushik: please check this section.}
+%1)	Formal methods for synchronization constructs (Mellor-Crummey)\\
+%(2)	Formal methods in some specific subunits (e.g., matrix multiplication)\\
+%(3)	Outside HPC there is a lot of formal methods, compcert that certifies 
+%compilers, polyhedral optimizations. The NSF DeepSpec effort.\\
+%\ggcmt{Semi-formal verification in {\bf today's state of the art} includes things written in Section 3.3; move as much of it here. To recap, these are what I can remember to include under this aspect: (1) the UPC tools developed by Koushik's team;   (4) Efforts by Armando to sketch stencils;  (6) There could be real-life applications of CIVL I don't know about. I don't think we can say more about formal methods in the state-of-the-art.}
+
+\subsubsection{Control of Non-determinism}
+When debugging a parallel program, programmers must first reproduce
+the bug; however, because of the non-determinism that comes from 
+parallelism and non-deterministic inputs, reproducing bugs can be a challenge.
+Some data- and message-race bugs, only manifest themselves
+one time every many (possible hundreds) runs. Thus, programmers often use tools
+to control the non-determinism of parallel programs when debugging.
+A common method is to use \textit{record-and-replay} techniques~\cite{REMPI} to record
+the execution of a program when the bug manifests, and then to replay the same
+execution deterministically using a parallel debugger. Other tools allow
+programmers to speedup the manifestation of the bug, i.e., to make it manifest
+with more likelihood in less runs (NINJA~\cite{NINJA}).
+SReplay~\cite{ICS'16,PPoPP'16} is the first software tool for
+deterministic record and replay for one-sided communication. A key
+innovation in SReplay is that it allows the user to specify and record
+the execution of a set of threads of interest (sub-group), and then
+deterministically replays the execution of the sub-group on a local
+machine without starting the remaining threads. 
+
+\subsubsection{Anomaly detection}
+Anomaly (or outlier) detection---detection of behavior that is significantly
+different from the expected (or normal) behavior---can be used to isolate 
+software defects. Here, \textit{behavior} can be broadly defined in terms 
+of performance or correctness metrics, from slower-than-usual execution 
+times to out-of-range floating-point computations or unusual logic actions 
+(e.g., some branches taken more often than others). Most methods in this 
+domain use traces that are obtained under error-free runs to define 
+\textit{normal} behavior, and then traces that are collected when 
+an error manifests are used to detect and localize problems.
+Some of the work in the area include DMTracker~\cite{DMTRACKER}, Mirgorodskiy et al.~\cite{Mirgorodskiy2006},
+AutomaDeD~\cite{AUTOMADED}, and Bronevetsky et al.~\cite{Bronevetsky2012}. 
+Anomaly detection has been used as well to detect scale-dependent bugs, 
+i.e., bugs that hide themselves at small scale but that manifest at 
+large scale (Vrisha~\cite{VRISHA}, WuKong~\cite{VRISHA}).
+
+\subsubsection{Conventional Parallel Debugging}
+Parallel debuggers allow programmers to control and to examine the state
+of threads and processes in a parallel program. These tools have advanced
+graphical interfaces that support a wide range of features to visualize 
+the value of variables in the program and can operate under several parallel programming
+models, including OpenMP, CUDA, and MPI. Two of the most used commercial options
+are TotalView~\cite{TotalView} and DDT~\cite{DDT}.
+
+A very effective way to debug large-scale parallel programs is stack trace analysis; 
+the STAT~\cite{STAT} tool provides a lightweight method to gather and merge 
+stack traces of parallel processes and to present them to programmers in an 
+intuitive way. Relative Debugging~\cite{DeRose:2015} can assists programmers to
+locate errors by observing a divergence in relevant data structures between two
+versions of the same program as they execute, and is particularly
+effective when code is migrated from one platform to another.
+
+LGDB (Cray Line Mode Parallel Debugger) is a GDB-based parallel debugger
+developed by Cray that is used in DOE scientific computing facilities, such
+as the National Energy Research Scientific Computing Center (NERSC) and
+Argonne Leadership Computing Facility’s (ALCF).
+CCDB is a GUI tool for comparative debugging that runs LGDB underneath.
+Its interface makes it easy for users to interact with LGDB for debugging.
+
+
+%{\small\em
+%Largely convey the impression that barring some fledgling efforts,
+%many of the practiced methods are either ad-hoc or debugger- and
+%elbow-grease heavy. Once we pitch current methods as being ad-hoc,
+%the "recent success stories" will stand out in stark contrast.}
+
+%\begin{itemize}
+%\item In program Design and development
+
+%\begin{itemize}
+%\item 
+%Testing – integration, functionaly testing, regression testing, repeating results (bitwise or within a margin)
+%Small scale tests to try to predict large scale, so we may miss data races which are dependent on scale
+
+%\item Documentation, no specification
+%\item Check physics laws with assertions of what is expected
+%\item Order of accuracy: reduce the resolution and check if results are still correct
+%\item Method of manufactured solutions: create appropriate input to ensure the solution is expected. Linear system example. 
+%\item Assertions are used to express all expected behavior and results
+%\item Using analytical solutions to check results 
+%\item Comparison against experimental data (validation)
+%\item Tools to check syntax, debugging tools
+%\item Tools for checking deadlock, livelock, data races… 
+%\item Dynamic tools, Memory checkers
+%\item Ensemble consistency – human analysis, statistics
+%\item Code comparisons, defining the same problem and the same answer are challenges
+%\item Tools detect problem:  
+%\item Tools that help user detect problem
+
+%\begin{itemize}
+%\item Hard to reproduce errors: recorded replay
+%\item Resilience issue of recorded replay, how to make recording atomic and what hwd support is needed
+%\end{itemize}
+
+%\item Names of tools: need participants to send that to me
+%\item Error correcting algorithm is turned off to get performance: just throw out the run that gets wrong results
+%\item Static analysis done by compilers 
+%\item Clang does runtime analysis 
+%\item Some efforts to define interfaces 
+%\item Formal methods in some specific subunits, such as matrix multiplication
+%\item Formal methods for synchronization constructs -0 Mellor-Crumney
+%\item Most applications do not have error checking 
+%\end{itemize}
+
+%\item In optimization/code generation
+
+%\begin{itemize}
+%\item No tool for solving problems that arise from optimization
+%\item Delta debugging tools
+%\item Random testing of compiler, engineering of compiler
+%Rely on good engineering, and testing
+%\item Coverage tests, path coverage very difficult to achieve
+%\item Vendors have large test suites
+%\item Test that transformations are semantics preserving
+%\item Outside HPC there is a lot of formal methods, compcert that certifies compilers, polyhedral optimizations
+%When we put MPI and OpenMP into the mix, all bets are off
+%\item Rare bugs
+%\item CUDA compiler, ALTERA synthesis compiler could use some formal verification
+%\item CUDA memcheck to help users find data races
+%\item Most of the errors are out of bounds and memory errors
+
+%\end{itemize}
+%\end{itemize}
+
+\subsection{Correctness through Correct-by-Construction Certification}
+As mentioned above, in the certification approach, a rigorous software development methodology involves writing the proof of code correctness along with the code, using a proof assistant.  In some cases, one does not write the code at all -- it is auto-generated, along with the proof, and the layer specifications, from a sketch written in a tactics language~\cite{WengPhD2016}. Recently this approach has showed great promise in the systems software field, with certifying compilers and ways of developing efficient code along with strong proofs of correctness. The certified software is engineered for proof modularity, so that independently certified parts can be linked for ensuring correctness of the overall system.  The scope of proofs within this community includes reasoning about concurrency, security, storage systems and floating point correctness.  A rich library of code, proof objects, and mathematical ontologies are available for developers to draw on in creating larger systems.  There is great pick-up of this technology within the computer systems research community---it is now expected and rewarded by the top conferences that new systems software technologies are accompanied with the formal proofs of correctness~\cite{chen2015using}.  The certification approach is also rapidly gaining traction in the embedded computing field (for correctness of systems with respect to safety requirements) and cybersecurity field (for proofs of freedom from particular vulnerabilities). Although the software engineered with this approach is highly modularized, e.g., into ``Deep Specifications''~\cite{gu2015deep}, the certification approach does not impose significant performance penalties.  Full and performant concurrent operating systems are available that are fully certified~\cite{gu2016certikos}.  Hardware cores have been designed that export their functional properties (e.g., opcode semantics, memory model, and synchronization semantics) and are formally verified to these specifications.  The specifications are exported so that the software above can be certified in the context of proved hardware semantics.  
+\ignore{==>
+The National Science Foundation (NSF) has funded a broad multi-institution project ``DeepSpec'' to advance the field of deep specifications.<==}
+Recently there has been progress in applying certification approaches to randomize algorithms~\cite{BEGGHS16}, which might lead to ways to certify numerical methods based on statistical assumptions.
+
+
+
+\subsection{Successes due to rigorous and systematic methods}
+\label{sec:sw-fv-promising-methods}
+
+We enumerate some recent advances in the field of verification that are
+related to HPC. While small scale and initial prototypes, and in some 
+cases very difficult to achieve, they indicate the feasibility of 
+verifying HPC programs, the availability of powerful initial tools, 
+and that the field is primed for success.
+
+\begin{itemize}
+\item Certification of C programs with floating point: 
+Ramananandro et. al.~\cite{ramananandro2016unified} developed a 
+tool VCFloat that demonstrated that “floating-point computation can 
+be verified in a homogeneous verification setting based on Coq only.” 
+Ramananandro used a new formal specification of IEEE 754 Floating point 
+called Flocq~\cite{boldo2011flocq}.
+
+\item Verification of a C numerical solver for a wave equation. 
+Boldo et. al.~\cite{boldo2013wave} used a tool Frama-C that statically 
+analyzes a C program to produce a proof that can be checked by 
+a range of different tools, including Coq with Flocq, and also SMT solvers.
+
+\item Rigorous mixed-precision floating-point tuning 
+methods, such as in FPTuner~\cite{DBLP:conf/popl/ChiangBBSGR17}, 
+promise to lead to optimization methods that can reduce data movement 
+and energy consumption, while providing rigorous absolute-error related guarantees.
+
+% ilaguna: I moved this to the dynamic analysis section above 
+% since this is not a verification tools per se and/or doesn't use any
+% formal or rigorous approach.
+%\item \emph{Precimonious}~\cite{SC'13} is a dynamic program
+%analysis tool to assist developers in tuning the precision of
+%floating-point programs. Precimonious performs a search on the types
+%of the floating-point program variables trying to lower their
+%precision subject to accuracy constraints and performance goals.
+%The tool recommends a type instantiation that uses lower precision while
+%producing an accurate enough answer without causing exceptions. We
+%evaluate Precimonious on several widely used functions from the GNU
+%Scientific Library, two NAS Parallel Benchmarks, and three other
+%numerical programs. For most of the programs analyzed, Precimonious
+%reduces precision, which results in performance improvements as high
+%as 41\%.
+
+% ilaguna: I moved this to the dynamic analysis section above 
+% since this is not  a verification tool per se and/or doesn't use any
+% formal or rigorous approach.
+%\item \emph{Blame Analysis}~\cite{ICSE'16b} is another 
+%dynamic approach to further speedup the precision tuning of
+%Precimonious. Blame Analysis functions by executing floating-point
+%instructions using different levels of accuracy for their
+%operands. Evaluation on ten scientific programs shows that Blame
+%Analysis is successful in lowering operand precision. Experiments showed that
+%combining Blame Analysis with Precimonious leads
+%to obtaining better results with a significant reduction in analysis
+%time: the optimized programs execute faster (in three cases, we
+%observe as high as 39.9\% program speedup) and the combined analysis
+%time is $9\times$ faster on average, and up to $38\times$ faster than
+%Precimonious alone. 
+
+\item UPC-Thrille~\cite{ICS'13,PPoPP'13,SC'11,upc-thrille} is the first complete
+implementation of data race detection for distributed memory
+programs.  The implementation tracks local and global memory
+references in the program and it uses two techniques to reduce the
+overhead: 1) hierarchical function and instruction level sampling; and
+2) exploiting the runtime locality specific to Partitioned Global
+Address Space applications. 
+% ilaguna: commenting to save space
+%The tool finds all previously 
+%known data races in our benchmark programs with at most 50\% 
+%overhead when running on 2048 cores. 
+
+% ilaguna: I moved this to the control of non-determinism section above 
+% since this not a verification tool per se and/or doesn't use any
+% formal or rigorous approach.
+%\item \emph{SReplay}~\cite{ICS'16,PPoPP'16} is the first software tool for
+%deterministic record and replay for one-sided communication. A key
+%innovation in SReplay is that it allows the user to specify and record
+%the execution of a set of threads of interest (sub-group), and then
+%deterministically replays the execution of the sub-group on a local
+%machine without starting the remaining threads.  SReplay maintains
+%scalability by a combination of local logging and approximative event
+%order tracking within sub-group. Evaluation on deterministic and
+%nondeterministic HPC benchmark programs shows that SReplay introduces
+%an overhead ranging from 1.3$\times$ to 29$\times$, when running on
+%1,024 cores and tracking up to 16 threads.
+
+\item CIVL~\cite{CIVL} is the first symbolic execution-based verifier 
+that can analyze programs using many HPC-relevant parallel programming models, 
+including MPI, OpenMP, Pthreads, and CUDA. It has also been applied to 
+``hybrid'' programs that use more than one programming model. It has found 
+bugs in several shorter examples, including race conditions in an OpenMP 
+code offered in tutorials.
+
+\item The ARCHER race detector~\cite{ARCHER} based on formal loop carry independence 
+analysis and happens-before race checking helped detect a nasty race condition 
+(that previously defied debugging for months)  within HYDRA, a large multiphysics 
+application developed at LLNL, which is used for simulations at the National 
+Ignition Facility (NIF) and other high energy density physics facilities.
+
+% ilaguna: I'm moving this to below ("outside-of-HPC cases")
+%\item The STACK~\cite{WangZKS13} analysis system uses symbolic execution 
+%to identify points in the code that can lead to errors because of 
+%undefined behavior. In particular, it has been very successful in 
+%identifying checks that could be removed by the compiler because of 
+%undefined behavior. The tool was used to find over 150 bugs that got 
+%repaired in open source programs including the Linux kernel 
+%and the Postgres database system. The program has also been 
+%used successfully at companies such as Intel~\cite{STACKnews}.
+
+\end{itemize}
+
+We list success cases of rigorous and systematic methods that are outside of HPC
+but that exemplify how these methods can successfully be applied in other complex
+systems:
+
+\begin{itemize}
+
+\item Since 2011, engineers at Amazon Web Services (AWS) have used 
+formal specification and model checking to help solve difficult design 
+problems in their systems~\cite{CACM2015amazon}. The use of Temporal 
+Logic of Actions (TLA+) helped Amazon find several bugs and to improve 
+the overall confidence of their systems. This is an excellent example 
+of how formal methods have been used in large real-world 
+distributed systems.
+
+\item The STACK~\cite{WangZKS13} analysis system uses symbolic execution 
+to identify points in the code that can lead to errors because of 
+undefined behavior. In particular, it has been very successful in 
+identifying checks that could be removed by the compiler because of 
+undefined behavior. The tool was used to find over 150 bugs that got 
+repaired in open source programs including the Linux kernel 
+and the Postgres database system. The program has also been 
+used successfully at companies such as Intel~\cite{STACKnews}.
+
+\item Concolic Testing (also known as DART:
+Directed Automated Random Testing or Dynamic Symbolic Execution)
+alleviated the limitations of classical symbolic execution by
+combining concrete execution and symbolic
+execution~\cite{PLDI'05,FSE'05}.  Concolic testing~\cite{CACM'13} has been demonstrated as an effective technique for generating
+high-coverage test suites and for finding deep errors in complex
+software applications. 
+The success of concolic testing in scalably and
+exhaustively testing real-world software was a major milestone in the
+ad hoc world of software testing and has inspired the development of
+several industrial and academic automated testing and security tools
+such as PEX, SAGE, YOGI, and Vigilante at Microsoft, Apollo at IBM,
+ConBol and Jalangi at Samsung, CATG at NTT Laboratories, and SPLAT,
+BitBlaze, jFuzz, Oasis, and SmartFuzz in academia. Some of these tools have been successfully applied to discover critical functional abugs and security vulnerabilities in real-world software.  \ggc{For example, SAGE~\cite{DBLP:journals/cacm/GodefroidLM12}} has found many new expensive security bugs in many Windows applications, and is now used daily in various Microsoft groups. SAGE found one-third of all Win7 WEX security bugs.
+
+\item  
+\ignore{===>
+Benjamin Pierce's group at the University of Pennsylvania, 
+working with Chalmers University and the commercial company QuviQ, 
+developed a system for formally specifying the behavior of the <===}
+\ggc{In recent work,
+file sharing and synchronization services
+supported by DropBox
+was subject to property-based testing~\cite{MysteriesOfDropbox2016}. This shows 
+that large scale distributed systems, developed in an ad-hoc way 
+without formal methods, can have major holes, even when in massive use,
+and that formal methods can be practically used to close these gaps.}
+
+\ignore{===>, a service in active use with 
+more than 500 million register users. Pierce and his colleagues tested 
+the service's observed behavior as users, against the model. Building 
+on observed deviations, 
+they were able to show various ``Surprises'' 
+where DropBox could briefly delete a created file, permanently recreate 
+a deleted file, and
+<===}
+
+\end{itemize}
+
+%\noindent Other successes (from slides)
+%\begin{itemize}
+%\item Very limited academic engagement at this time
+%\item Need success stories to convince ECP, and others:
+%\item Maybe examples from other areas
+%\item IntelliJ – Jetbrains – lots of companies are using it: integration of static analysis into IDE
+%\item DSL examples: Halide not only for correctness but for performance
+%\item TensorFlow – internal DSL, write in Python, compiles down to CUDA and C.
+%\item NwchemX, TAMM – Sriram mentioned how they use DSLs
+%\item Good infrastructures for writing verified DSLs: Fiat, MIT, generates  verified implementation. Spiral, CMU.  Parallel codes for Signal processing, FFTs, image analysis. But not MPI code… SCALA, Delite, Chisel, OPTIML – infrastructures for internal DSLs. Julia, Matlab -   external DSL. 
+%\item DSL for SQL  - Oracle (Costin example)
+%\item STREAM compiler
+%\item Dolfin and Dolfin ? Firedrag? Use internal DSLs (Paul expample) – built on libraries. 
+%\item Astrée – applied to airbus consortium – part of Mathworks
+%\item Amazon web services,  INRIA work – paper (Siegel example)
+%\item FLAME (formal linear algebra methods, U. Texas)
+%\item FP verification – Intel (Ganesh example)
+%\item SAGE tool from Microsoft – applied to their own software (Koushik example) 
+%\item DSL + verified infrastructure is the disconnect now for HPC
+%\item General symbolic execution techniques have great potential (Koushik example), coupling with abstract interpretation (Ganesh example)
+%\item Formal methods applied to CSP using session types (Stephen example; Ganesh can also add)
+%\end{itemize}
+
+
+
+

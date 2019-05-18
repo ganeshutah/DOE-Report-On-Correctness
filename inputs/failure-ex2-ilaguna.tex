@@ -1,0 +1,22 @@
+\begin{WrapTextLeft}
+\footnotesize
+{\large \textbf{When More Than \textit{print} Debugging Is Needed}}\\
+A scientist experienced hangs in a laser-plasma interaction code 
+(named PF3D) when scaling it to 524,288 MPI processes on 
+LLNL’s Sequoia BlueGene/Q system. The scientist spent months trying 
+to debug the problem through print statements to no avail. 
+Moreover, the scientist was unable to reproduce the hang at 
+smaller scales where fully featured, heavyweight debuggers 
+would be more plausible. Using STAT (Stack Trace Analysis Tool), 
+the scientist was able to debug the problem, a race condition 
+between two distinct but overlapping communication code regions. 
+The bug was the result of the application migrating from one version to another more scalable but incompatible one. During migration, the application ran 
+through a compatibility layer that introduced the race condition 
+and ultimately caused the timing- and scale-dependent hangs 
+(more in~\cite{CACM:Debugging}). This case shows that, although 
+print debugging can be a useful debugging method, 
+the HPC community can benefit from advanced correctness 
+methods and tools to isolate bugs that otherwise can consume 
+months of effort and millions of CPU hours to fix.
+
+\end{WrapTextLeft}

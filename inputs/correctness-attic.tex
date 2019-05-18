@@ -1,0 +1,614 @@
+
+
+In HPC, a program is considered correct when it does what
+a scientist or a programmer intends it to do and when it
+generates accurate results, which can be reproduced for
+different runs and computing platforms. 
+%
+Typical reasons
+for the lack of correctness include: 
+
+\begin{compactitem}
+\item Incorrect use of
+parallel constructs; 
+
+\item Synchronization problems; 
+
+\item Issues with
+data access (wrong and out-of-bounds indexing);
+
+\item Insufficient floating-point precision;
+
+\item Variability of system resources and non-deterministic
+order of computations; 
+
+\item Incorrect optimizations/transformations;
+and Composition-time interactions between program units.
+
+
+\end{compactitem}
+
+\subsection{HPC correctness}
+
+{\small\em This may be merged with similar points elsewhere.}
+
+\begin{compactitem}
+\item A program is correct when it does what a scientist or a programmer intends it to do and when it generates (valid, acceptable, expected?) results across different  inputs, runs and a class of computing platforms. 
+
+
+\item Assumptions about structure of data, operations. 
+
+\item Program proving and  checking.
+
+\item Absolute correctness or reasonable correctness. 
+
+\item Specification checking. Tests are specifications? 
+
+\item Tools and methodologies for testing?
+
+\item Existing infrastructure, support community, bug reports/repositories
+
+\item Asymptotic behavior, from input to input, how accuracy scales with mesh resolutions, really need multiple runs. Property of a collection of runs.
+
+\begin{compactitem}
+\item Output is a distribution of different values, if the result is within distribution, then it is correct. 
+\end{compactitem}
+
+\item Probabilistic statement of correctness. 
+
+\item Non-determinism in the application itself. Different interleaving of messages, valid results, but not identical.  Branch and bound algorithms. 
+
+\item Memory model errors 
+
+\item Correctness of libraries, compilers, runtime systems – there have been breakthroughs for software stack – produce fully certified HPC software stack
+
+\item System giving the right answers: if not, where is the problem? Isolating the problem.  Explanations, not just yes/no answer.
+
+\item If we start from a high level specification languages, can follow the steps to certify that it is correct. 
+
+\item Some specifications can be incorrect, from chip level to compilers, …
+
+\end{compactitem}
+
+
+\subsection{Correctness nuances}
+
+\noindent HPC correctness is quite nuanced in that
+one could consider many levels of correctness:
+
+\begin{compactitem}
+\item Algorithm bugs – formal specification
+
+  \begin{compactitem}
+  \item correctly implements algorithm at the level of mathematical
+
+  \item floating point algorithms
+  \end{compactitem}
+
+
+\item Memory errors, race conditions, memory consistency model errors
+
+\item Numerical errors – precision, …
+
+\item Emergent behavior and runtimes. Root causes. Hardware.
+
+\item Where does machine variability is a source of errors
+
+\item Correctness relative to specification of the libraries, semantics of the language, what guarantees the runtime provides.
+
+\item User program is correct? Can be proved correct and yet have runtime errors? Performance model as part of correctness models.
+
+\item Progress: termination property and performance property. Can be expressed in some specification language. 
+
+\end{compactitem}
+
+\subsection{Why growing in importance?}
+
+{\small\em (connect with challenges identified in the bullet list on HPC correctness)}
+
+\noindent While correctness has always been important in HPC, it is becoming even more important.  The pressure is coming from several places:
+
+\begin{compactitem}
+\item One is from the hardware.  As we have lost the easy gains that would come from increases in microprocessor clock frequency each year, performance has had to come from new techniques. The constraint on the amount of power that a facility can dissipate has further led to new [..??..missing text..]
+
+\item Programmers are intentionally introducing asynchrony and nondeterminism in order to increase performance.  However, programmers have a hard time reasoning about asynchronous, nondeterministic behavior.
+
+\item Programmers are intentionally introducing low precision data representations in order to reduce data movement costs.
+
+\item The heterogeneity in hardware and architectures has led to the development of multiple code versions that target distinct architectures, machine models, and performance models, with each individual version being tested less rigorously.
+
+\item High levels of intra-node concurrency has led to mixed programming models (MPI+X) creating a multiplicative effect in the potential for concurrency bugs, especially given that 
+behaviors across various programming models are only loosely specified and may depend on
+specific implementations.
+
+\end{compactitem}
+
+
+
+\subsection{What sets HPC correctness apart?} 
+
+The following aspects set HPC correctness apart from those correctness methods well-studied in traditional software engineering.
+
+{\small\em This many bullets looks like a firing squad. Merge and put in begin/end description.}
+
+$\bullet$
+HPC algorithms typically are numerical, involving floating point computations.  The use of floating point introduces considerations of accuracy and numerical precision.  
+   
+$\bullet$ HPC algorithms typically operate at scale, running on thousands to millions of cores.
+
+$\bullet$ HPC algorithms in some cases are used to explore different scientific models, and the science may involve new hypotheses and theories that are not yet fully understood. This means that one must additionally distinguish problems arising from the model, to the already known vulnerability to problems from the algorithm and the implementation. 
+
+$\bullet$ HPC algorithms involve work-flows of large unrelated/disjoint codes with poorly specified constraints and relations among the codes
+
+$\bullet$ HPC computations often involve complex mathematics for which there are not yet formal models to support automated reasoning about correctness.
+
+$\bullet$ HPC codes are optimized to the extreme, which sometimes involves “dangerous” optimizations that are not correct for all cases.
+
+$\bullet$ HPC uses programming languages (e.g., FORTRAN), libraries (e.g., Petsc) and models (OpenMP, MPI) that are less popular than in mainstream computer science.
+
+$\bullet$ HPC runs on extreme hardware, with mechanisms and behavior that is not found in general computing systems and which is currently outside the formal models available in other verification systems (e.g., network interfaces and fabrics, accelerators, local memories, collective operations, adaptive routing, synchronization mechanisms.)
+
+$\bullet$ Performance is a critical aspect of HPC and verifying performance (absolute, asymptotic) of code is important.
+
+$\bullet$ HPC applications can involve extreme concurrency and new concurrency mechanisms (e.g., event-driven tasks), and often these mechanisms cannot be shielded from users.
+
+$\bullet$ The ratio of users to developers of code is a lot smaller for HPC than general software.
+
+$\bullet$ HPC software uses advanced algorithms (linear algebra, fast multipole method, particle in cell, transforms, …) which are not commonly found in general software, and the landscape of algorithms is rapidly evolving
+
+$\bullet$ HPC programs are run on extreme resources (e.g., leadership computing facilities) which are few in number, which constrains the amount of time available for verification and debugging, and that limit the amount of testing and experimenting that can be done at scale.
+
+$\bullet$ HPC often runs large bodies of legacy codes
+
+$\bullet$ HPC problems often can be solved by one of several different ways (direct, indirect, varied preconditioners) and it is often unclear which ways will work best on different inputs
+ 
+$\bullet$ The need for performance in HPC codes leads developers to sometimes push into abstractions to achieve performance.
+
+$\bullet$ The highly coupled and long-lived nature of HPC simulations increases the proclivity to introduce bugs and spread the corrupted state widely. 
+
+$\bullet$ The latency between bug introduction and detection can be very large, thus severely hampering our ability to chase down the root causes.
+
+
+   
+\subsection{Why rigorous methods?}
+
+Define rigorous (formal and 
+semi-formal) methods.
+
+Make Costin's point 
+{\small\em Costin: I think we should define soundness here and distinguish between sound/formal  and empirical methods.
+Some classes of problems are well suited for formal methods: it is either the case the tool can provide sound results or humans need machine assistance in reasoning about the particular problem. Some examples here…
+
+Other classes of problems are well suited for more empirical approaches: in these cases the tool tries to maximize the number of useful results given a programmer constraint, such as a time budget  or classes of inputs. Some examples here ..
+}
+
+\subsection{Why important and opportune?}
+
+The opportunity for advance in HPC correctness can build on recent and rapid advances in the field of software verification for general software.   These technologies can be the foundation on which an effort for HPC Correctness R\&D can build.
+
+For model checking, the advances in the capabilities of solvers for the Satisfiability (SAT solvers [ref zChaff]) provide an important tool.  A decade ago, the largest SAT problems that could be solved might involve a few hundred variables.  Now problems will millions of variables can be solved.  Extensions to bring in different “theories” with Satisfiability Modulo Theory (or SMT) solvers, extend the scope of propositional verification.  Many important software (and hardware) verification problems can be solved using SAT and SMT solvers, and these techniques are widely used and in production.
+
+{\small\em Need someone to cite particular successes and tools for model checking using SAT/SMT on which HPC correctness can build. [Siegel: working on it … will mention symbolic execution,
+CIVL, as an example.   Does anyone else have another example of application of this technology to HPC?]}
+
+The programming languages community, using advanced mathematics (proof carrying code, Curry-Howard correspondence, …), have recently broken through with new methodologies and tools for the certification of software. In this domain “certification” of software means that the software executable is generated with an accompany proof of conformance to the specification. These tools verify “with machine-checked proofs that the assertions claimed at the top of the toolchain really hold in the machine-language program, running in the operating-system context, on a weakly-consistent-shared-memory machine.” [Appel11]. The technology uses the Calculus of Inductive Constructions and the Coq proof assistant.
+
+The proof that provides certification is of a form such that it can be rapidly checked with a small proof checker. Special certified compilers are now available commercially, that produce certified code from the input of source code plus proof, and the technology is open source and free for academic institutions. In this methodology, the programmer writes both modular code and its proof of correctness.  In some cases, good code can be automatically generated from just writing down only the proof itself as the code underlying the proof is implied. Large bases of embedded code in avionics have been fully certified with this methodology [need ref].  The National Science Foundation is accelerating this thrust with a large “Expeditions” project DeepSpec (see DeepSpec.org). DeepSpec is working to broaden the capabilities of the tools and the code that has now been certified.  The “deep” refers to a new way of architecting software systems with highly layered and modularized proofs of correctness [Gu15].  Within DeepSpec, fully-certified concurrent operating systems are now available [Gu16]. In the systems research community, it is now becoming the norm and expectation for new systems technologies to be accompanied by formal proofs of their correctness (e.g. [Chen15] at SOSP15).
+
+The hardware complexity has motivated many application teams to write codes using domain-specific abstractions (DSLs and frameworks). These abstractions enable programmer intent to be specified succinctly and allows tools to exploit domain information built into the abstractions to ensure correctness.
+
+{\small\em Examples of debugging tools success for general software on which HPC Correctness can build.}
+
+\subsection{Major challenges faced\ASGNMT{Steve, Ganesh}}
+
+We first present major challenges faced today (\S\ref{sec:challenges-today}), 
+their extrapolation as near-term future challenges (\S\ref{sec:challenges-upcoming}), and
+challenges in the
+``beyond Moore'' era
+(\S\ref{sec:challenges-beyond-moore}).
+
+ \subsubsection{Challenges faced today}
+ \label{sec:challenges-today}
+ 
+ Correctness challenges faced today include a hierarchy of concerns ranging from
+ questions about the algorithm being implemented, about how the 
+ algorithm is expressed and compiled, and about support libraries.
+ 
+There are no tangible
+specification available for
+the range of inputs and range of machines that an algorithm is supposed to work on.
+%
+Failures in this regard arise when problem parameters are changed or the code
+is ported.
+%
+Best practices in traditional software engineering are often not applicable
+in HPC; for instance, erecting a rigid HW/SW abstraction 
+layer that
+treats the machine as a black box 
+(the norm in software engineering) is
+incongruous with  HPC.
+%
+Another dimension to this problem in HPC is that many algorithms
+are implemented differently on different platforms to optimize
+performance and bring down energy costs.
+%
+Techniques are needed to track and contain errors when such
+variety goes up.
+
+HPC systems rely upon support libraries that are developed over several person-years.
+%
+There are no formal (or even semi-formal) specifications for most libraries.
+%
+This is a concern, especially when porting codes to benefit from the power of 
+OpenMP-style multicore parallelism or GPU-based accelerator execution.
+%
+We believe that libraries are a good focal point for concerted effort on
+formalization and standardization whose benefits can lift many an HPC project.
+
+
+Many issues concerning compilation and execution monitoring through traces 
+is poorly understood and/or standardized.
+%
+The extent of software defects in compilation and how floating-point arithmetic
+is treated by compilers is a big mystery.
+%
+Recent efforts in compiler testing have exposed egregious bugs at the {-O0} 
+level~\cite{regehr-O0-bug}.
+%
+The push toward auto-vectorization, parallelizing transformations as in
+systems such as PLUTO and CHiLL, and the growth of layers in the compilation
+stack as evidenced by projects such as RAJA~\cite{raja} and KOKKOS~\cite{kokkos}
+add to further erosion in trust of a critical pillar necessary to reliably
+bridge the gap from algorithm expression to machine execution.
+%
+Growth in interest in LLVM and associated technologies has lead to
+a huge boost in terms of productivity and reliability claims one can
+make in traditional (``server'') software projects, and recent
+efforts in bringing LLVM to HPC~\cite{llvm-hpc} are highly 
+promising in this regard.
+
+\todo[inline]{Many promising advances in verification and certified compilation have been built around the C ecosystem. Scientific applications are often written using languages such as Fortran or C++. Rather than attempt to develop full-fledged support to verify Fortran/C++ programs, we believe that incremental support to verify a subset of constructs or frameworks on DSLs built on the basic language constructs can quickly advance the state of practice.}
+ 
+ The remaining problems faced today
+ can further be taxonomized into problems faced
+ by the domain scientist and by the programmer (they may be the same).
+ %
+ 
+ \paragraph{Solutions Useful for Domain Scientists}
+ 
+ 
+ \begin{itemize}
+\item  Techniques to match parallel program behaviors against 
+  their sequential counterparts.
+
+\item  Techniques to debug attempts to port existing parallel codes.
+
+\item  Assumptions made in the code may not transcend scale (especially
+ with respect to
+  how MPI and OpenMP runtimes interact).
+ Another concern is that the algorithms used may be switched
+  depending on scale.
+  This brings up interesting testing challenges and coverage metrics,
+   especially given the
+  limited availability of large scale resources (node allocations) for testing.
+Techniques to predict failures at large scale using small scale testing,
+ as well as ``simulate large scale''
+will become important.
+
+{\large\bf GG: stopped here}
+
+\item  Test coverage issues, and how to define useful metrics.
+
+\item  DSL code generator certifications.   What is reasonable to certify
+ in this domain.
+
+  
+
+\item  Dependent typing solution? {\small\em GG: I suggested this as a way to be able to parameterize a whole design so that it can be consistently downscaled w/o breaking array-size mismatches, implicitly coded unary bit-vectors whose sizes must adjust with some table size, etc. This may belong more in solutions, mentioned later.}
+{\small\em SS: As an example, the number of grid points must be a multiple of the number of processes.  Using a dependent type to specify this in the program would be cool.  Alternatively, it could be encoded as an assumption (that is what CIVL does).  But a type mechanism might give you a way to prove things more easily.   I think you can describe the general problem here, and the specific solutions later.}
+
+ 
+
+\item  Degree of parallelism: less nodes, but more threads on the node.
+
+\item  Bug attribution
+ methods will be essential,
+ especially
+ in the face of
+ different semantics for communication, synchronization for the different languages and runtime systems. 
+ 
+\item  The trend
+to intentionally introduce non-determinism to get better performance has
+to be balanced with the needs to determinize in order to
+rein in on testing complexity.
+
+ \end{itemize}
+
+ \paragraph{Solutions Useful for Programmers and System Designers}
+ 
+\begin{itemize}
+\item New machines may have untested
+ corner cases, such as coherence across nodes.
+ These may delay bring-up times for new systems, and must be
+ combated.
+ 
+\item  Concurrency issues of composition
+
+\item  New networks and networks stacks will have bugs,
+and failure detection at this level is essential.
+
+ 
+\item  OpenMP – specifying synchronization behavior – not going well. {\small\em I suspect the specs are not in place?}
+
+\item  Mixing languages, compilers, runtimes. Deep spec work. {\small\em GG: Deep-spec has too much mention. It
+ is one high-powered Expeditions that has just begun. Wait
+  till it is nearly over? I heard one of their presentations and I don't know whether their slant will really impact HPC as much as it will impact "other SW".}
+
+\item HPC software architecture could achieve correctness. 
+
+\item  Convergence issue: no mathematics for the composition. 
+
+\item  Basically today there are no tools for many of these issues
+
+\item  Formal languages for expressing composition is needed. Separation logic. 
+
+\item  Dynamic checks. 
+Specification of interfaces and contracts 
+Type checking for patterns.
+Interface automata.
+
+\item  Protections – hardware or software – prevention
+We have features, but programmers are not using them. {\small\em GG: Everyone using MPI\_COMM\_WORLD was mentioned by Armando.}
+
+\end{itemize}
+ 
+
+ 
+ 
+ \begin{tiny}
+ {\small\em GG: Again, this is a huge list scraped
+ from the slides; make it coherent and tight.}
+ 
+\begin{itemize}
+\item Specification of range of inputs, range of machines that an algorithm is supposed to work. Well established theories and tools for dealing with concurrency errors. Standard software engineering, but not a practice in HPC. Why? Feasible, but need training. Some properties are very expensive to check. 
+
+\item Surprises from the way you compile, run it, …
+
+\item Lack of formal specifications for libraries, compilers… There is so much room for improvement in this area.
+
+\item Can we prove correctness for a large scientific code? It is made of a composition of components, each component can be proved. But how to prove the composition?
+
+\item  Analyze traces post-mortem. 
+
+\item  Dynamic  checking and diagnostics
+
+\item  Expeditions projects with Princeton, Yale, MIT: certified software. Fully certified compilers, OSR, …
+ {\small\em GG: Do they have citeable results? If so, cite?}
+ 
+\item  Fully certified MPI, OpenMP, CUDA – short term goal?
+
+\item  Proofs of floating point standard. {\small\em GG: Need clarification here. We are not proving the std.}  Module that can be plugged into linear algebra libraries.
+ {\small\em GG: There are efforts at UW - Tatlock's Herbie - that must be cited. Aiken's STOKE work plus his 
+ efforts to prove x86 vector instructions must also
+ be cited. Those are much more practical than theorem-proving based methods in FP that are really tedious and meant for long-term impact, largely. Also if/when Clarke's paper "proof/generation from delta decisions" appears, 
+ we can cite that (right now on Arxiv).}
+
+\item  Deductive techniques, don’t depend on the size of input.
+
+\item  Concurrency: race bugs, etc.
+
+\item  Memory consistency models. 
+
+\item  Cyber-physical systems  have used some correctness proofs. {\small\em GG: Yes, the work to be cited here is
+Andre Platzer's work from CMU.}
+
+\item  Techniques for finding bugs dynamically, assuming we cannot find them in the correctness check phase
+
+\item  LLVM – opportunity for HPC, a lot of things can be done. Symbolic checking is not proving correctness? 
+
+\item  Basic infrastructure is not possible today for end to end certification
+
+
+\item  DE Shaw model: molecular dynamics. Carefully reasoned precision. We should look into it. How could we prove. Non-determinism in MD is a bug…
+
+\item  Memory and energy costs?
+
+\item  Reversible computations. James Demmel. {\small\em GG: was it reversible, or was it his recent stuff on deterministic reduction and addition? He is also working on multiplication.}
+
+\item  Same algorithm is implemented for different platforms. No formal specs. New bugs for each implementation. Library of common specification errors. 
+
+\end{itemize}
+      
+    {\small\em GG: The list of problems we face today dribbles for more slides. Some more slide-scrapes are below.}
+    
+ 
+\begin{itemize}
+\item Domain scientist
+ \begin{itemize}
+\item  Have sequential program that is believed correct, want to ensure that the parallel version is also correct. 
+
+\item  What about existing parallel codes? As we rewrite for portability, what can we do to trust the new version? The original version may fail for some inputs. Regression tests? 
+
+\item  Assumptions for large scale may not hold
+MPI and OpenMP certifications.
+
+\item  Test coverage issues.
+
+\item  DSL code generator certifications.  Error behavior is different. What is reasonable to certify. 
+
+\item  Limited availability of large scale resources, so it is difficult to compare
+
+\item  Predictive behavior at large scale using small scale testing. 
+
+\item  Dependent typing solution? {\small\em GG: I suggested this as a way to be able to parameterize a whole design so that it can be consistently downscaled w/o breaking array-size mismatches, implicitly coded unary bit-vectors whose sizes must adjust with some table size, etc. This may belong more in solutions, mentioned later.}
+
+\item  People switch algorithms based on scale. 
+
+\item  Degree of parallelism: less nodes, but more threads on the node.
+
+\item  Bug attribution: 
+
+\item  Different semantics for communication, synchronization for the different languages, runtime systems. Solutions for this problem was mentioned.
+
+\item  Intentionally introduce non-determinism to get better performance. It is more difficult to reason about asynchronous programmers.
+
+\item  What is needed is for mathematicians to write down formally what they need , so that it becomes the communication tool with the CS 
+
+\item  Numerical libraries – first candidate of formal verification
+ \end{itemize}
+
+\item Programmer (system level)
+\begin{itemize}
+\item Coherence problems – example on Titan using CUDA
+
+\item  Thread issues {\small\em GG: need elaboration or nuke.}
+
+\item  Concurrency issues of composition
+
+\item  New networks and networks stacks not certified, formally verified. {\small\em GG: FV is a stretch; even a good spec and testing/coverage is a big thing here.}
+
+\item  OpenMP – specifying synchronization behavior – not going well. {\small\em I suspect the specs are not in place?}
+
+\item  Mixing languages, compilers, runtimes. Deep spec work. {\small\em GG: Deep-spec has too much mention. It
+ is one high-powered Expeditions that has just begun. Wait
+  till it is nearly over? I heard one of their presentations and I don't know whether their slant will really impact HPC as much as it will impact "other SW".}
+
+\item HPC software architecture could achieve correctness. 
+
+\item  Convergence issue: no mathematics for the composition. 
+
+\item  Basically today there are no tools for many of these issues
+
+\item  Formal languages for expressing composition is needed. Separation logic. 
+
+\item  Dynamic checks. 
+Specification of interfaces and contracts 
+Type checking for patterns.
+Interface automata.
+
+\item  Protections – hardware or software – prevention
+We have features, but programmers are not using them. {\small\em GG: Everyone using MPI\_COMM\_WORLD was mentioned by Armando.}
+
+\end{itemize}
+ 
+\end{itemize}
+   
+\end{tiny}
+   
+     
+
+    
+ \subsubsection{Upcoming challenges}
+ \label{sec:challenges-upcoming}
+ 
+
+
+As we move towards larger ensembles of cores, architectures
+and interconnects, the cost of
+maintaining instantaneously visible updates across distances 
+will grow astronomically.
+%
+Transactional behaviors and weaker memory consistency models 
+will be the norm---as evident even with MPI's one-sided communication
+that offers only weak consistency between reads and writes.
+%
+Language standardization (e.g., C++11 onwards) have supported an
+array of strong and weak atomics, and optimized implementations of
+libraries such as MPI and OpenMP will also increasingly employ these
+operations.
+%
+While a domain scientist will largely remain insulated from these
+concerns, the kinds of thinking necessary to deal with weak updates
+will be exposed to them even at the level of constructs such
+as \verb|MPI_IBarrier| where an MPI {\em barrier} does not block 
+till an ensuing \verb|Wait| operation.
+%
+The training (and associated debugging tools) necessary to deal
+with  ``many operations in flight'' will be required; transactions
+and weak consistency are the natural next steps to tooling and
+user training.
+ 
+\begin{itemize}
+\item Exascale:
+
+ 
+\begin{itemize}
+\item Exascale
+Software stack is being re-written in cowboy style
+
+\item Memory consistency issues
+
+\item Deep hierarchy, software memory mgmt, greater concurrency, resilience 
+Need new tools: need to verify correctness of the tools 
+
+\item Need indicators for code transformations
+
+\item Outlier detectors – need to collaborate with resilience research
+
+\item Fault tolerance – asymptotic checkers
+
+\item Interleaving and non-determinism than today.
+
+\item OSR speeding up, slowing down. Cannot rely on testing.
+
+\item Self-awareness, autonomic systems.
+
+\item Much more dynamic checking will be needed.
+
+\item Loop fusion across library calls will be needed for locality mgmt
+
+\item Even more bitten by lack of understanding of FP arithmetic
+
+\item New algorithms will be needed (e.g., multipole, communication avoiding, cache oblivious algorithms)
+
+\item Controlling non-determinism will be important 
+
+\end{itemize}
+ 
+ \subsubsection{Challenges during ``Beyond Moore''}
+ \label{sec:challenges-beyond-moore}
+ 
+ {\em Maybe a short section with a ref}
+
+\begin{itemize}
+\item More machine learning will be used, even more difficult to formally specify
+
+\item DARPA has XAI to push beyond to generate explanations
+
+\item For some areas, say sentiment analysis, narrowing the input, explanations, but not formal methods
+
+\item Probabilistic devices, how do we reason in this domain
+
+\item More separation of concerns between domain scientist and programmers, …
+
+\item Reconfigurable algorithms
+
+\item Composing library codes
+
+\item Error analysis
+
+\item Controlling non-determinism will be important 
+
+\item Tradeoff between performance and correctness
+
+\item Will need to certify optimizations? Will require specifications for compilers
+
+\item Latency between error and detection: Need for continuing tracing will go up
+
+\item Collection of metadata will be needed, increased 
+\item People are moving to languages with more features, more complexity that requires more complex tool chain.
+
+\item Combination of programming models (MPI+X) how to ensure they are correct.
+
+\item Code generation will be needed, will need to verify the generator.
+
+\item DSL, specialized hwd, 
+
+\item Building new languages, e.g. EDSL,  - need to verify the embedding
+\item Dedicated pipeline that support the traceability from the high level code to the binary to ensure that every step is verified correct.
+
+\item Lifting sjpecs out of  existing code.  Finding domains to get clean specifications. Stencils has clean, high level formulism.  Maybe guided lifting. 
+
+\end{itemize}
+
+\end{itemize}

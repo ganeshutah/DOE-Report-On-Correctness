@@ -1,0 +1,23 @@
+\begin{WrapText}
+\footnotesize
+{\large \textbf{A Hard-To-Debug Large-Scale Error}}\\
+A bug in ddcMD, a parallel molecular-dynamic code, manifested as an
+intermittent hang when run at large scale on BlueGene/L at LLNL.
+It took a significant amount of person hours and debugging effort 
+to find the root cause: a message race in which a process could 
+hang waiting for a message that was intercepted by 
+another process. More specifically, the hang occurred when 
+two independent instances of a user-level I/O layer
+were simultaneously processing two separate sets of buffers---an infrequent pattern that occurred when a small data set 
+was written immediately after a large data set. Due to the 
+semantics of MPI send/recv operations and the use of fixed tags, 
+messages from a small set could be confused for those for a 
+large set and vice versa, thus triggering the hang. 
+Later, after the bug was fixed by the programmer, the bug was 
+used in a blind study, in which researchers developed a tool 
+to isolate this class of bugs without having details of the error 
+(more in~\cite{PACTLaguna:2012}). This shows that documenting 
+bug cases can be useful in developing and testing advanced 
+correctness tool.
+\end{WrapText}
+

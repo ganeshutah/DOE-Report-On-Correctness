@@ -1,0 +1,284 @@
+Technologies for verification and debugging have made significant strides in the context of general systems software. An investment in such technologies to make them applicable for High Performance Computing (HPC) could lead to substantial improvements in the productivity and sustainability of HPC software development. Such improvements will be essential to fully exploit new exascale computer architectures.
+\ignore{------
+The technology for verification and debugging in support of correctness has advanced to the point that there is a basis for confidence in success of investment in the application and advancement of such tools 
+%--for correctness 
+in High Performance Computing (HPC).  With such investment, the field of computational science will benefit from substantial improvements in the ability to exploit new exascale computer architectures, and from substantial improvements in productivity and sustainability of HPC software development.
+-----}  Without such investment, there is the possibility of a substantial crisis in our ability to advance the field of HPC, as the complexity of our architectures, algorithms, and applications is moving beyond the ability of our developers.  As HPC is of strategic importance to our nation, forming the bedrock of its scientific and technological capabilities, such investment is highly warranted.
+
+\subsection{Reasons for the correctness crisis}
+
+While the general correctness problem in computer science is well
+researched, specific reasons that cause HPC-specific correctness
+methods to turn into an urgent priority include the following (see
+Figure~\ref{fig:overview-challenges}
+for an overview).
+
+\paragraph{Growing heterogeneity:}
+
+  Given the widening disparities between CPU, memory, and I/O speeds,
+  computations will be supported by a heterogeneous architectures that include CPUs, GPUs, and special-purpose accelerators~\cite{hwu-heterogeneity}.
+  %
+ Even today,
+  programs in this space exist around a patchwork of semantic
+  abstractions that are poorly understood individually, and
+  whose emergent behavior is poorly understood.
+
+\paragraph{Massive scale:}
+
+  Attaining exascale will require proper coordination and synchronization
+  across many tasks, threads, and processes~\cite{exascale-computing-project}.
+  Disciplines that guide programming in this space do not exist, nor do testing methods that unearth defects in this space.
+Left unchecked, this will lead to deployed systems that yield untrustable results or
+crash during long-running simulations. 
+Fixing the root cause of bugs in these
+settings will incur huge latencies during which science
+domain
+experts may sit idle or be unproductively engaged with
+debugging. These costs are known to be already very high (see the sidebars for some concrete examples of costly field bugs in HPC).
+\ignore{----
+but seldom highlighted in summary reports of HPC projects.
+----}
+
+
+% ilaguna
+\begin{figure}
+\centering
+\begin{adjustbox}{width=1.15\textwidth,center}
+\includegraphics[width=0.99\textwidth]{figures/overview_diagram.pdf}
+\end{adjustbox}
+\caption{Overview of the existing challenges in correctness for HPC and the research areas that need extensions to address these challenges.}
+\label{fig:overview-challenges}
+\end{figure}
+
+
+\paragraph{Non-intuitive behaviors:}
+ The push toward significant energy savings will lead to the use of
+  reduced floating-point arithmetic, delayed state updates across weak
+  memory consistency models, non-determinism caused by dynamic
+  voltage/frequency scaling, fault recovery steps and inherent
+  application non-determinism.  It is impossible to employ ad hoc
+  debugging methods in these situations.
+
+
+\paragraph{Cognitive overload:}
+The manner in which people write as well as
+configure full applications is
+evolving in a direction where human reasoning about correctness is impractical.
+  For example, the NWChemEx computational chemistry code is bringing together SPMD and task parallelism, multiple programming models and runtime interfaces, code generation, and dynamic and adaptive selection of execution configurations. 
+In these settings, manually reasoning about correctness of the application, or even an individual execution, has gone beyond the scope of the individual developers;
+the need to bring in more automated and/or
+formal ways has become quite apparent.
+
+
+
+\paragraph{New scalable algorithms:}
+New algorithms for numerical computing offer the potential for major improvements in the asymptotic requirements for computation~\cite{ascac-2017}.  Kernel-independent and generalized Fast Multipole Methods (FMM) enable matrix vector multiply to be achieved in $O(N)$ time.  Support preconditioner methods will enable sparse systems of equations to be solved in near-linear time.  Randomized linear algebra and compressive methods will enable systems to be simulated in sampled or compressed form.  Such algorithms will bring complex new execution patterns and complex tradeoffs between precision, probability, and time.  The ability to exploit these algorithms will require tools to facilitate reasoning about the correctness of their application and implementation.
+
+  %
+%--Sriram
+\input{inputs/failure-ex1-sriram.tex}
+
+
+  
+\paragraph{Community unpreparedness:} \mbox{ }\\
+  Compared to sequential programming abstractions that are more familiar
+  to an application scientist, future HPC systems will involve a large
+ slew of semantic abstractions (and relatively
+ newer abstractions such as tasking)
+ whose correct and efficient usage are
+  not first nature to the broad application development community.
+ 
+Ways to insulate application developers through
+domain-specific languages (DSL) are badly needed; yet,
+progress is lacking in this direction.
+A related but severe problem is that
+HPC application developers do not have the mindset
+(or the necessary common repositories) for sharing
+best practices (including
+  sharing information on bugs and bug-fixes).
+  This lack will hamper 
+the transitioning of new verification research results into practice.
+  
+
+  
+  \ignore{==> Ganesh addressed this above:
+\todo[inline]{Should we include two more reasons: (1) use of DSLs, 
+(2) use of task-based programing models?}
+<==}
+
+
+
+
+
+\subsection{What is in scope, what is not}
+
+%To delineate the concerns addressed
+%in this report, we outline issues within the scope of this report followed by a sampling of issues considered out-of-scope.
+
+
+
+\paragraph{Current issues in scope:}
+%
+Any defect a programmer can correct by modifying and/or repairing
+existing programs and/or their support runtime logic are well within the scope of this report.
+These include
+the classic sequential program bugs, errors relating to concurrency
+(e.g., race conditions, incorrect programming under weak memory
+models), and numerics (e.g., errors in realizing the numerical
+algorithm using finite-precision floating-point numbers).  Defects that may
+manifest only when a code is scaled up and not  during
+lower-scale testing are also in scope.
+
+We also consider defects that can be eliminated by disciplined code
+ transformations from higher-level, or can be eliminated through
+ better composition and software engineering practices.  Defect
+ prevention methods that can be incorporated into best practices,
+ pedagogy, mineable bug repositories, expert tutorials, and IDEs that
+ can prevent or issue warnings about possible bugs are also of great
+ importance, and are well within scope.
+
+    % by ilaguna
+  %--
+  \input{inputs/failure-ex1-ilaguna.tex}
+  %--
+  
+
+When defining the correctness of HPC programs, it is important to keep in mind that the behavior of a user-written program is heavily influenced by the
+behaviors of the underlying libraries.
+%
+Not only are the sequential (e.g., numerical and C/Fortran) libraries important, the behavior of communication and runtime libraries (e.g., MPI and OpenMP) directly impact how a user program executes and whether it even makes forward progress.
+
+In this context, it is important to detect
+and eliminate
+erroneous arguments supplied to library functions
+that may cause a program crash. 
+For example, MPI calls must adhere to conventions pertinent to
+the source language (Fortran or C).
+%
+However, resource aspects of the runtime and communication libraries are a whole different matter.
+%
+%
+For example, it is possible to write a user program that may be perfectly correct as far as the users' mental model of an ``idealized MPI library'' goes, but unfortunately a given MPI library may be unable to park all the asynchronous sends that the user program has issued.
+%
+Such user programs can either deadlock or crash an MPI library.
+
+
+Most libraries are
+underspecified, and their implementations often do not come with strong
+guarantees, such as about the amount of resources provided (e.g., amount of
+buffering) or whether forward progress or a response within a
+deadline is guaranteed. 
+%
+These issues are clearly also important, but must be relegated to a longer-term pursuit that involves cooperation from library and runtime designers.
+
+
+
+
+In the same vein,
+the inability to control the evolving semantics of libraries and
+programming languages must be kept in mind, requiring cooperation
+among participant communities.   For instance, if a library
+guarantees a certain order of accuracy for its results (e.g., ``9
+digits of accuracy'') for specific platforms, we may not be prepared
+to detect the violation of such contracts by another library
+on a newer platform to which the code is ported.
+
+ % by ilaguna
+%--
+\input{inputs/failure-ex2-ilaguna.tex}
+%--
+
+
+
+
+\paragraph{Upcoming issues in scope during exascale:}
+We also realize that
+this report is being written in a timeframe where the underlying designs of exascale systems are experiencing significant disruptive changes.
+%
+In this era, hardware will often be poorly specified, particularly with regard to features related to
+the memory model, concurrency and synchronization.  With exascale, new hardware features
+for controlling voltage and frequency, are appearing, as well as advanced features for
+task scheduling, communication, and synchronization. 
+%
+There will be heavy uses of heterogeneous types of memory (e.g., non-volatile, scratchpad spaces that do not provide cache coherence, etc.).
+%
+Consider the behavior
+of an adaptive congestion algorithm~\cite{jiang2009indirect} in the communications fabric, which may 
+affect or permute the ordering of delivery of messages. If such features are
+not specified or are incorrectly specified to the runtime or MPI libraries, it will be impossible for any verification technology to guarantee correctness of the software running on it.  
+
+
+
+The performance behavior of hardware is also moving into the arena
+of correctness and even safety, where exascale hardware systems are likely to be
+over-provisioned with transistors, so that not all 
+parts of the system can be used simultaneously while still remaining below
+the power and cooling limits of the facility, and within the limits for safe and correct operation of the machine.  This will impose requirements
+on firmware, system software and applications to maintain resource usage.  
+
+All these
+issues clearly point to an even greater 
+demand for formal specifications from the hardware
+vendors on these behaviors and requirements.
+It will also correspondingly demand that our formal verification
+and debugging tools use these hardware level formal specifications in order to provide overall correctness guarantees.
+
+   
+  %--
+\input{inputs/failure-ex1-ganesh.tex}
+     
+
+
+ 
+
+\paragraph{The following issues are not directly within scope:} There are many issues that are important to keep in mind, but are best relegated to other pursuits that are better able to focus on them. 
+%
+We now mention a few examples of such issues (by no means exhaustive).
+%
+HPC programs may be brought down by
+hardware logic errors in microprocessors, GPUs,
+memory subsystems, and  buggy interconnect
+protocol implementations.
+%    
+Soft errors may corrupt program behavior, but are not considered human-introduced 
+defects.
+%
+Version control and security-related issues are again somewhat tangential.
+%
+Finally, the numerical algorithm itself can be incorrect.
+%
+For instance,
+errors in the design of the numerical scheme to
+approximate the idealized mathematics,
+including incorrectly scheduled coarse/fine meshing, lack of
+conditioning of the problems, etc.,
+can be considered {\em algorithmic}
+defects and not software defects.
+%
+
+  
+\subsection{Suggested research foci, targeted time-frames\ASGNMT{Ganesh (lead), Richard}}
+% * <ganesh@cs.utah.edu> 2017-02-06T03:51:08.919Z:
+% 
+% We need to assign authors for these sections.
+% 
+% ^ <ganesh@cs.utah.edu> 2017-02-06T03:51:36.245Z.
+
+%-- GG: agreed and changed hours
+ %\ilcmt{It looks weird that the time periods of the short-, medium-, and long-term goals overlap.
+ %If a program manager wants to fund say the short-term goals, she/he might have to fund also medium-term goals.
+ %I think non-overlapping terms is better: 1--2 years, 2--5 years, and 5--beyond.}
+ 
+ We now summarize some of the key short-term, medium-term, and long-term directions identified and elaborated in the rest of this report.
+ 
+ 
+      \subsubsection{Short-term (1-2 years)}
+      \input{inputs/short-term-foci.tex}
+
+      \subsubsection{Medium-term (2-5 years)}
+      \input{inputs/medium-term-foci.tex}
+
+      \subsubsection{Long-term (5 years and beyond)}
+      \input{inputs/long-term-foci.tex}
+
+  
